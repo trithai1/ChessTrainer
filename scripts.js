@@ -66,7 +66,7 @@ let draggingPiece = null, selectedPiece = null;
 let offSetY = 0;
 let offSetX = 0;
 
-const chess = new Chess();
+let chess = new Chess();
 
 function removeHelpers() {
     const highlightHelpers = document.getElementsByClassName("helper");
@@ -381,7 +381,28 @@ const positions = [
     "3r1rk1/1p3ppp/p1n2n2/4bb2/8/2NBP2P/PPP2PP1/2KRR3 b - - 0 14",
 ]
 
+function removeChessPieces() {
+    chessGrid.querySelectorAll(".piece").forEach(element => element.remove());
+}
+
+function randomPoolNumber(pool, n) {
+    if (pool.length === 0) {
+        pool = Array.from({length: n}, (_, i) => i);
+    }
+
+    const randIdx = Math.floor(Math.random() * pool.length);
+    const value = pool.splice(randIdx, 1)[0];
+    return [pool, value];
+}
+
+let pool = [], value;
 nextPosition.onclick = (event) => {
-    const randPos = Math.floor((Math.random() * positions.length));
-    console.log(positions[randPos]);
+    [pool, value] = randomPoolNumber(pool, positions.length);
+    const fen = positions[value];
+
+    removeChessPieces();
+    removeHelpers();
+    svg_utils.removeAllSVG();
+    chess = new Chess(fen);
+    fenToChessboard(fen);
 };
