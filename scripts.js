@@ -373,5 +373,15 @@ getFen.onclick = (event) => {
     console.log(chess.getFen());
 };
 
+const positions = [
+    "r1bqkbnr/pppp1ppp/2n5/4P3/8/5N2/PPP1PPPP/RNBQKB1R b KQkq - 2 3",
+    DEFAULT_FEN,
+    "r1b1kbnr/pp3ppp/2np4/8/5B2/5N2/PPP1PPPP/RN2KB1R w KQkq - 0 7",
+    "r1b1k2r/pp3ppp/2n2n2/4b3/8/2N5/PPP1PPPP/2KR1B1R b kq - 3 10",
+    "3r1rk1/1p3ppp/p1n2n2/4bb2/8/2NBP2P/PPP2PP1/2KRR3 b - - 0 14",
+]
+
 nextPosition.onclick = (event) => {
+    const randPos = Math.floor((Math.random() * positions.length));
+    console.log(positions[randPos]);
 };
