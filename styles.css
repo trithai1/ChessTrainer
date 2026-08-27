@@ -1,0 +1,230 @@
+:root {
+    --cell-highlight: rgb(101, 185, 230, .35);
+    --svg-index: 60;
+    --selection-overlay-index: 150;
+    --promotion-index: 200;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background-image: url("assets/img/silver_bg.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+#chess-container {
+    display: grid;
+    place-items: center;
+}
+
+#promotion-overlay {
+    display: none;
+    grid-template-columns: repeat(8, min(10vh, 8vw));
+    grid-template-rows: repeat(8, min(10vh, 8vw));
+    background: rgba(0, 0, 0, 0.8);
+    grid-column: 1/-1;
+    grid-row: 1/-1;
+    width: 100%;
+    height: auto;
+    z-index: var(--selection-overlay-index);
+}
+
+#promotion-q {
+    background-image: url("assets/img/white_piece_frame.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    grid-column: 3;
+    grid-row: 1;
+    width: 100%;
+    height: auto;
+    z-index: var(--promotion-index);
+}
+
+#promotion-n {
+    background-image: url("assets/img/white_piece_frame.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    grid-column: 3;
+    grid-row: 2;
+    width: 100%;
+    height: auto;
+    z-index: var(--promotion-index);
+}
+
+#promotion-r {
+    background-image: url("assets/img/white_piece_frame.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    grid-column: 3;
+    grid-row: 3;
+    width: 100%;
+    height: auto;
+    z-index: var(--promotion-index);
+}
+
+#promotion-b {
+    background-image: url("assets/img/white_piece_frame.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    grid-column: 3;
+    grid-row: 4;
+    width: 100%;
+    height: auto;
+    z-index: var(--promotion-index);
+}
+
+.promotion-piece {
+    width: 100%;
+    height: 100%;
+    z-index: var(--promotion-index);
+}
+
+#svg-container {
+    z-index: var(--svg-index);
+    width: 100%;
+    height: auto;
+    grid-column: 1/-1;
+    grid-row: 1/-1;
+    pointer-events: none;
+}
+
+#chess-grid {
+    display: grid;
+    background-color: black;
+    background-image: url("assets/img/chesscom/board.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    grid-template-columns: repeat(8, min(10vh, 8vw));
+    grid-template-rows: repeat(8, min(10vh, 8vw));
+    width: fit-content;
+    border: 1px solid black;
+    border-radius: 1%;
+    line-height: 0; /* svg is treated as inline text, so this remove the extra spacing and tighten the div size to the svg */
+}
+
+.move-highlight {
+    background-color: var(--cell-highlight);
+}
+
+.piece:not(.dragging):hover {
+    background-color: var(--cell-highlight);
+}
+
+.piece-move {
+    width: min(10vh, 8vw);
+    height: min(10vh, 8vw);
+}
+
+.move-circle {
+    position: relative;
+    width: calc(min(10vh, 8vw)/3);
+    height: calc(min(10vh, 8vw)/3);
+    background: rgb(0, 0, 0, .35);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.capture-mark {
+    width: 100%;
+    height: 100%;
+    opacity: 0.35;
+}
+
+.piece-highlight {
+    background-color: var(--cell-highlight);
+}
+
+.wp {
+    background-image: url("assets/img/chesscom/wp.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wn {
+    background-image: url("assets/img/chesscom/wn.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wb {
+    background-image: url("assets/img/chesscom/wb.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wr {
+    background-image: url("assets/img/chesscom/wr.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wq {
+    background-image: url("assets/img/chesscom/wq.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wk {
+    background-image: url("assets/img/chesscom/wk.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.bp {
+    background-image: url("assets/img/chesscom/bp.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.bn {
+    background-image: url("assets/img/chesscom/bn.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.bb {
+    background-image: url("assets/img/chesscom/bb.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.br {
+    background-image: url("assets/img/chesscom/br.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.bq {
+    background-image: url("assets/img/chesscom/bq.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.bk {
+    background-image: url("assets/img/chesscom/bk.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
