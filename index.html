@@ -7,27 +7,31 @@
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+    <div id="button-panel">
+        <button id="get-fen">Get Fen</button>
+        <button id="next-position">Next</button>
+    </div>
     <div id="chess-container">
-        <div id="chess-grid">
-            <div id="promotion-overlay">
-                <div id="promotion-q">
-                    <div class="wq promotion-piece"></div>
+        <div id="chess-border">
+            <div id="chess-grid">
+                <div id="promotion-overlay">
+                    <div id="promotion-q">
+                        <div class="wq promotion-piece"></div>
+                    </div>
+                    <div id="promotion-n">
+                        <div class="wn promotion-piece"></div>
+                    </div>
+                    <div id="promotion-r">
+                        <div class="wr promotion-piece"></div>
+                    </div>
+                    <div id="promotion-b">
+                        <div class="wb promotion-piece"></div>
+                    </div>
                 </div>
-                <div id="promotion-n">
-                    <div class="wn promotion-piece"></div>
-                </div>
-                <div id="promotion-r">
-                    <div class="wr promotion-piece"></div>
-                </div>
-                <div id="promotion-b">
-                    <div class="wb promotion-piece"></div>
-                </div>
+                <svg id="svg-container" viewBox="0 0 80 80"></svg>
             </div>
-            <svg id="svg-container" viewBox="0 0 80 80"></svg>
         </div>
     </div>
-    <button id="get-fen">Get Fen</button>
-    <button id="next-position">Next</button>
     <script type="module" src="./scripts.js"></script>
 </body>
 </html>
