@@ -152,7 +152,7 @@ function fenToChessboard(fen=DEFAULT_FEN) {
     let row = 0, col = 0, cssPiece;
     for (let char of piecePlacement) {
         if (utils.isDigit(char)) {
-            col += parseInt(char);
+            col += Number(char);
             continue;
             
         } else if (char === '/') {
@@ -197,8 +197,8 @@ function fenToChessboard(fen=DEFAULT_FEN) {
 
             pieceType = chessPiece.classList[1];
             prevClassName = chessPiece.className;
-            prevRow = parseInt(chessPiece.style.gridRow) - 1;
-            prevCol = parseInt(chessPiece.style.gridColumn) - 1;
+            prevRow = Number(chessPiece.style.gridRow) - 1;
+            prevCol = Number(chessPiece.style.gridColumn) - 1;
             chessPiece.classList.add("dragging");
             chessPiece.style.zIndex = spec.PAGE_INDEX.DRAGGING_PIECE;
 
