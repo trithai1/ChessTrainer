@@ -62,7 +62,7 @@ export function drawArrow(startRow, startCol, endRow, endCol, className=undefine
     
     let arrow = ARROW.map(points => [...points]);
     for (let i = 1; i <= 5; i++) arrow[i][0] += length;
-    for (let value of arrow) {
+    for (const value of arrow) {
         let x = value[0];
         let y = value[1];
         const point = SVG_CONTAINER.createSVGPoint();

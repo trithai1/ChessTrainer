@@ -150,7 +150,7 @@ function fenToChessboard(fen=DEFAULT_FEN) {
     const [piecePlacement, activeColor, castlingRights, enPassantTarget, halfMove, fullMove] = fen.split(" ");
     
     let row = 0, col = 0, cssPiece;
-    for (let char of piecePlacement) {
+    for (const char of piecePlacement) {
         if (utils.isDigit(char)) {
             col += Number(char);
             continue;
