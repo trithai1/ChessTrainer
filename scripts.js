@@ -1,8 +1,8 @@
 import * as spec from "./spec.js";
 import * as svg_utils from "./svg_utils.js";
-import {DEFAULT_FEN, PIECE_COLOR, CHECK_STATE, GAME_STATUS, PIECE_BY_FEN, CHESS_PIECE} from "../Logicore/chess_constants.js";
-import * as utils from "../Logicore/utils.js";
-import Chess from "../Logicore/chess.js";
+import {DEFAULT_FEN, PIECE_COLOR, CHECK_STATE, GAME_STATUS, PIECE_BY_FEN, CHESS_PIECE} from "../../Logicore/chess_constants.js";
+import * as utils from "../../Logicore/utils.js";
+import Chess from "../../Logicore/chess.js";
 
 const clamp = (min, num, max) => Math.min(Math.max(num, min), max);
 
