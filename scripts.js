@@ -4,6 +4,61 @@ import {DEFAULT_FEN, PIECE_COLOR, CHECK_STATE, GAME_STATUS, PIECE_BY_FEN, CHESS_
 import * as utils from "../../Logicore/utils.js";
 import Chess from "../../Logicore/chess.js";
 
+class ChessChallenge {
+    // Type
+    static PUZZLE = "puzzle";
+    static POSITION = "position";
+    
+    constructor() {
+        this.chess;
+        this.pool = [];
+        this.rating = 1000;
+        this.challenge;
+    }
+
+    static randomPoolNumber(pool, n) {
+        if (pool.length === 0) {
+            pool = Array.from({length: n}, (_, i) => i);
+        }
+
+        const randIdx = Math.floor(Math.random() * pool.length);
+        const value = pool.splice(randIdx, 1)[0];
+        return [pool, value];
+    }
+
+    getRandomPuzzle() {
+        const challenge = {
+            type: ChessChallenge.PUZZLE,
+            fen: DEFAULT_FEN,
+        }
+        return challenge;
+    }
+
+    getRandomPosition() {
+        const challenge = {
+            type: ChessChallenge.POSITION,
+            fen: DEFAULT_FEN,
+        }
+        return challenge;
+    }
+
+    setupChallenge() {
+        const [newPool, value] = ChessChallenge.randomPoolNumber(this.pool, 6);
+        this.pool = newPool;
+
+        const isPuzzle = value % 2 == 2;
+        if (isPuzzle) {
+            this.challenge = this.getRandomPuzzle();
+        } else {
+            this.challenge = this.getRandomPosition();
+        }
+
+        this.chess = new Chess(this.challenge.fen);
+    }
+
+    evaluateMove() {}
+}
+
 const clamp = (min, num, max) => Math.min(Math.max(num, min), max);
 
 const moveSound = new Audio("./assets/move.mp3");
@@ -66,7 +121,7 @@ let draggingPiece = null, selectedPiece = null;
 let offSetY = 0;
 let offSetX = 0;
 
-let chess = new Chess();
+const challenge = new ChessChallenge();
 
 function removeHelpers() {
     const highlightHelpers = document.getElementsByClassName("helper");
@@ -83,10 +138,10 @@ function addHelpers(row, col) {
     highlightHelper.zIndex = spec.PAGE_INDEX.HELPER;
     chessGrid.appendChild(highlightHelper);
 
-    const moves = chess.moves([row, col]);
+    const moves = challenge.chess.moves([row, col]);
     for (let i = 0; i < moves.length; i++) {
         const [_row, _col] = moves[i];
-        const castle = chess.getCastle();
+        const castle = challenge.chess.getCastle();
         if (_row == null && _col == true) { // castle kingside
             moves.push([row, col + 2]);
             moves.push([row, castle.kingside.rook.col]);
@@ -100,7 +155,7 @@ function addHelpers(row, col) {
 
         const moveHelper = document.createElement("div");
         
-        if (chess.isOpenSquare(_row, _col)) {
+        if (challenge.chess.isOpenSquare(_row, _col)) {
             const moveCircle = document.createElement("div");
             moveCircle.className = "helper move-circle";
             moveCircle.zIndex = spec.PAGE_INDEX.HELPER;
@@ -174,7 +229,7 @@ function fenToChessboard(fen=DEFAULT_FEN) {
 
         chessPiece.addEventListener("mousedown", event => {
             event.preventDefault(); // Prevent text selection
-            if (event.button != 0 || pieceColor !== chess.activeColor || chess.gameStatus !== GAME_STATUS.INPROGRESS) { return; }
+            if (event.button != 0 || pieceColor !== challenge.chess.activeColor || challenge.chess.gameStatus !== GAME_STATUS.INPROGRESS) { return; }
             // The bug should be fixed, but this is still just in case anything happens with mouseup not triggering.
             // Just an extra layer of protection.
             if (draggingPiece !== null) {
@@ -203,7 +258,7 @@ function fenToChessboard(fen=DEFAULT_FEN) {
             chessPiece.style.zIndex = spec.PAGE_INDEX.DRAGGING_PIECE;
 
             removeHelpers();
-            if (chess.isActivePiece(prevRow, prevCol)) {
+            if (challenge.chess.isActivePiece(prevRow, prevCol)) {
                 addHelpers(prevRow, prevCol);
             }
         });
@@ -211,8 +266,6 @@ function fenToChessboard(fen=DEFAULT_FEN) {
         col++;
     }
 }
-
-fenToChessboard();
 
 // Board Events
 // --------------
@@ -229,7 +282,12 @@ document.addEventListener("mousemove", event => {
 });
 
 function performPieceMove(piece, fromRow, fromCol, toRow, toCol, promotion=null) {
-    const moveResult = chess.move([fromRow, fromCol], [toRow, toCol], promotion);
+    const move = {
+        from: [fromRow, fromCol],
+        to: [toRow, toCol],
+        promotion
+    }
+    const moveResult = challenge.chess.move(move);
     if (!moveResult.success) {
         // selectedPiece = toRow === fromRow && toCol === fromCol ? piece : null;
         piece.className = prevClassName;
@@ -307,7 +365,7 @@ window.addEventListener("mouseup", event => {
     let row = Math.floor((event.clientY - chessGridBounds.top) / (chessGridBounds.height/8));
     let col = Math.floor((event.clientX - chessGridBounds.left) / (chessGridBounds.width/8));
 
-    if (chess.isPromotion(prevRow, prevCol, row, col)) {
+    if (challenge.chess.isPromotion(prevRow, prevCol, row, col)) {
         selectedPiece = draggingPiece;
         draggingPiece.className = prevClassName;
         draggingPiece.style.gridRow = prevRow + 1;
@@ -366,43 +424,24 @@ window.addEventListener("mouseup", event => {
     svg_utils.finalizeDraggingSVG();
 });
 
-const nextPosition = document.getElementById("next-position");
-const getFen = document.getElementById("get-fen");
+const nextChallengeEl = document.getElementById("next-challenge");
+const getFenEl = document.getElementById("get-fen");
 
-getFen.onclick = (event) => {
-    console.log(chess.getFen());
+getFenEl.onclick = (event) => {
+    console.log(challenge.chess.getFen());
 };
-
-const positions = [
-    "r1bqkbnr/pppp1ppp/2n5/4P3/8/5N2/PPP1PPPP/RNBQKB1R b KQkq - 2 3",
-    DEFAULT_FEN,
-    "r1b1kbnr/pp3ppp/2np4/8/5B2/5N2/PPP1PPPP/RN2KB1R w KQkq - 0 7",
-    "r1b1k2r/pp3ppp/2n2n2/4b3/8/2N5/PPP1PPPP/2KR1B1R b kq - 3 10",
-    "3r1rk1/1p3ppp/p1n2n2/4bb2/8/2NBP2P/PPP2PP1/2KRR3 b - - 0 14",
-]
 
 function removeChessPieces() {
     chessGrid.querySelectorAll(".piece").forEach(element => element.remove());
 }
 
-function randomPoolNumber(pool, n) {
-    if (pool.length === 0) {
-        pool = Array.from({length: n}, (_, i) => i);
-    }
-
-    const randIdx = Math.floor(Math.random() * pool.length);
-    const value = pool.splice(randIdx, 1)[0];
-    return [pool, value];
-}
-
-let pool = [], value;
-nextPosition.onclick = (event) => {
-    [pool, value] = randomPoolNumber(pool, positions.length);
-    const fen = positions[value];
-
+function nextChallenge() {
+    challenge.setupChallenge();
     removeChessPieces();
     removeHelpers();
     svg_utils.removeAllSVG();
-    chess = new Chess(fen);
-    fenToChessboard(fen);
-};
+    fenToChessboard(challenge.fen);
+}
+nextChallenge();
+
+nextChallengeEl.addEventListener("click", nextChallenge);
