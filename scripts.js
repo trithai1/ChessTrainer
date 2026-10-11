@@ -282,12 +282,11 @@ document.addEventListener("mousemove", event => {
 });
 
 function performPieceMove(piece, fromRow, fromCol, toRow, toCol, promotion=null) {
-    const move = {
+    const moveResult = challenge.chess.move({
         from: [fromRow, fromCol],
         to: [toRow, toCol],
         promotion
-    }
-    const moveResult = challenge.chess.move(move);
+    });
     if (!moveResult.success) {
         // selectedPiece = toRow === fromRow && toCol === fromCol ? piece : null;
         piece.className = prevClassName;
