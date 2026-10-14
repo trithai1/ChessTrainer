@@ -4,6 +4,80 @@ import {DEFAULT_FEN, PIECE_COLOR, CHECK_STATE, GAME_STATUS, PIECE_BY_FEN, CHESS_
 import * as utils from "../../Logicore/utils.js";
 import Chess from "../../Logicore/chess.js";
 
+class ChessPuzzle {
+    constructor() {
+        this.rating = 1000;
+        this.puzzle;
+    }
+
+    async load() {
+        const response = await fetch("/assets/data/sampled_puzzles_25.csv");
+    }
+
+    getNextPuzzle() {
+        this.puzzle = {
+            fen: DEFAULT_FEN,
+        };
+        return this.puzzle;
+    }
+
+
+    evaluateMove(move) {
+        return false;
+    }
+}
+
+class ChessPosition {
+    constructor() {
+        this.rating = 1000;
+        this.position;
+        this.gamesByRating = {};
+    }
+
+    parsePGN(pgn) {}
+
+    async load() {
+        const response = await fetch("assets/data/sampled_games_25.pgn");
+
+        if (!response.ok) {
+            throw new Error(`Failed to load PGN: ${response.status}`);
+        }
+        
+        const text = await response.text();
+
+        const games = text
+            .split(/(?=\[Event\s+")/)
+            .filter(game => game.trim());
+        
+        for (const pgn of games) {
+            const game = this.parsePGN(pgn);
+
+            if (game.whiteElo === null || game.blackElo === null) continue;
+
+            const avgElo = (game.whiteElo + game.blackElo) / 2;
+            const bucket = parseInt(avgElo / 200) * 200;
+
+            this.gamesByRating[bucket] ||= [];
+            this.gamesByRating[bucket].push(game);
+        }
+
+        console.log(`Loaded ${games.legnth} games`);
+    }
+
+    getNextPosition() {
+        this.position = {
+            fen: DEFAULT_FEN,
+        };
+        return this.position;
+    }
+
+
+    evaluateMove(move) {
+        const score = -1;
+        return score;
+    }
+}
+
 class ChessChallenge {
     // Type
     static PUZZLE = "puzzle";
@@ -12,8 +86,14 @@ class ChessChallenge {
     constructor() {
         this.chess;
         this.pool = [];
-        this.rating = 1000;
+        this.chessPuzzle = new ChessPuzzle();
+        this.chessPosition = new ChessPosition();
         this.challenge;
+    }
+
+    async load() {
+        await this.chessPuzzle.load();
+        await this.chessPosition.load();
     }
 
     static randomPoolNumber(pool, n) {
@@ -26,37 +106,29 @@ class ChessChallenge {
         return [pool, value];
     }
 
-    getRandomPuzzle() {
-        const challenge = {
-            type: ChessChallenge.PUZZLE,
-            fen: DEFAULT_FEN,
-        }
-        return challenge;
-    }
-
-    getRandomPosition() {
-        const challenge = {
-            type: ChessChallenge.POSITION,
-            fen: DEFAULT_FEN,
-        }
-        return challenge;
-    }
-
     setupChallenge() {
         const [newPool, value] = ChessChallenge.randomPoolNumber(this.pool, 6);
         this.pool = newPool;
 
         const isPuzzle = value % 2 == 2;
         if (isPuzzle) {
-            this.challenge = this.getRandomPuzzle();
+            this.challenge = {
+                type: ChessChallenge.PUZZLE,
+                puzzle: this.chessPuzzle.getNextPuzzle(),
+            };
         } else {
-            this.challenge = this.getRandomPosition();
+            this.challenge = {
+                type: ChessChallenge.POSITION,
+                position: this.chessPosition.getNextPosition(),
+            };
         }
 
         this.chess = new Chess(this.challenge.fen);
     }
 
-    evaluateMove() {}
+    evaluateMove(move) {
+        return false;
+    }
 }
 
 const clamp = (min, num, max) => Math.min(Math.max(num, min), max);
@@ -122,6 +194,7 @@ let offSetY = 0;
 let offSetX = 0;
 
 const challenge = new ChessChallenge();
+await challenge.load();
 
 function removeHelpers() {
     const highlightHelpers = document.getElementsByClassName("helper");
