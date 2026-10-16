@@ -8,10 +8,44 @@ class ChessPuzzle {
     constructor() {
         this.rating = 1000;
         this.puzzle;
+        this.puzzlesByRating = {};
     }
 
     async load() {
-        const response = await fetch("/assets/data/sampled_puzzles_25.csv");
+        const response = await fetch("assets/data/sampled_puzzles_25.csv");
+        if (!response.ok) throw new Error(`Failed to load puzzles: ${response.status}`);
+        const text = await response.text();
+        
+        const lines = text.trim().split(/\r?\n/);
+        const headers = lines[0].split(",");
+
+        for (const line of lines.slice(1)) {
+            const values = line.split(",");
+
+            const row = Object.fromEntries(
+                headers.map((header, i) => [header, values[i]])
+            );
+
+            const puzzle = {
+                id: row.PuzzleId,
+                fen: row.FEN,
+                moves: row.Moves.split(" "),
+                rating: Number(row.Rating),
+                ratingDeviation: Number(row.RatingDeviation),
+                popularity: Number(row.Popularity),
+                nbPlays: Number(row.NbPlays),
+                themes: row.Themes.split(" "),
+                gameUrl: row.GameUrl,
+                openingTags: row.OpeningTags ? row.OpeningTags.split(" ") : [],
+                dailyDate: row.DailyDate || null,
+            };
+
+            const bucket = parseInt(puzzle.rating / 200) * 200;
+            this.puzzlesByRating[bucket] ||= [];
+            this.puzzlesByRating[bucket].push(puzzle);
+        }
+
+        console.log(`Loaded ${lines.slice(1).length} puzzles`);
     }
 
     getNextPuzzle() {
@@ -34,15 +68,104 @@ class ChessPosition {
         this.gamesByRating = {};
     }
 
-    parsePGN(pgn) {}
+    parsePGN(pgn) {
+        const headers = {};
+
+        // Parse headers: [Event "Rated Blitz game"], [Date "2026.09.01"], etc.
+        for (const match of pgn.matchAll(/^\[(\w+)\s+"((?:\\.|[^"\\])*)"\]\s*$/gm)) {
+            headers[match[1]] = match[2];
+        }
+
+        // Extract moves section: 1. d4 { [%eval 0.15] [%clk 0:03:00] } 1... c6 { [%eval 0.33] [%clk 0...
+        const moveText = pgn.replace(/^\[.*\]\s*$/gm, "").trim();
+
+        // tokenize the moves, including both colors into a list: [ "1.", "e4", "{ [%clk 0:01:00] }", "1...", "e6", ...]
+        const tokens = moveText.match(/\d+\.(?:\.\.)?|\{[^}]*\}|[^\s{}]+/g) || [];
+
+        let turn = 0;
+        let color = "white";
+
+        const moves = [];
+        for (const token of tokens) {
+            // token: 1.
+            if (/^\d+\.$/.test(token)) {
+                turn = parseInt(token);
+                color = "white";
+                continue;
+            }
+
+            // token: 1...
+            if (/^\d+\.\.\.$/.test(token)) {
+                turn = parseInt(token);
+                color = "black";
+                continue;
+            }
+
+            // parses { [%eval 0.15] [%clk 0:03:00] }
+            if (token.startsWith("{")) {
+                // split and parse to seconds: [%clk 0:03:00]
+                const clock = token.match(/\[%clk\s+(\d+):(\d+):(\d+(?:\.\d+)?)\]/);
+
+                if (clock && moves.length) {
+                    moves[moves.length - 1].time =
+                        Number(clock[1]) * 3600 +
+                        Number(clock[2]) * 60 +
+                        Number(clock[3]);
+                }
+
+                // split and parse evaluations: [%eval 0.15]
+                const evaluation = token.match(/\[%eval\s+([#-]?\d+(?:\.\d+)?)\]/);
+
+                if (evaluation && moves.length) {
+                    const value = evaluation[1];
+                    moves[moves.length - 1].eval = value.startsWith("#") ? value : Number(value);
+                }
+
+                continue;
+            }
+
+            if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue; // skip game result like 1-0 white wins
+
+            if (/^\$\d+$/.test(token)) continue; // skip chess NAG like $1 = Good Move
+
+            moves.push({
+                turn,
+                color,
+                move: token,
+                time: null,
+                eval: null,
+            });
+
+            color = color === "white" ? "black" : "white";
+        }
+
+        return {
+            event: headers.Event ?? null,
+            date: headers.Date ?? null,
+            white: headers.White ?? null,
+            black: headers.Black ?? null,
+            result: headers.Result ?? null,
+            utcDate: headers.UTCDate ?? null,
+            utcTime: headers.UTCTime ?? null,
+            whiteElo: Number(headers.WhiteElo) || null,
+            blackElo: Number(headers.BlackElo) || null,
+            whiteRatingDiff: headers.WhiteRatingDiff != null
+                ? Number(headers.WhiteRatingDiff)
+                : null,
+            blackRatingDiff: headers.BlackRatingDiff != null
+                ? Number(headers.BlackRatingDiff)
+                : null,
+            eco: headers.ECO ?? null,
+            opening: headers.Opening ?? null,
+            timeControl: headers.TimeControl ?? null,
+            termination: headers.Termination ?? null,
+            moves
+        };
+    }
 
     async load() {
         const response = await fetch("assets/data/sampled_games_25.pgn");
-
-        if (!response.ok) {
-            throw new Error(`Failed to load PGN: ${response.status}`);
-        }
-        
+        if (!response.ok)throw new Error(`Failed to load PGN: ${response.status}`);
         const text = await response.text();
 
         const games = text
@@ -56,12 +179,11 @@ class ChessPosition {
 
             const avgElo = (game.whiteElo + game.blackElo) / 2;
             const bucket = parseInt(avgElo / 200) * 200;
-
             this.gamesByRating[bucket] ||= [];
             this.gamesByRating[bucket].push(game);
         }
 
-        console.log(`Loaded ${games.legnth} games`);
+        console.log(`Loaded ${games.length} games`);
     }
 
     getNextPosition() {
