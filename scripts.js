@@ -7,8 +7,7 @@ import Chess from "../../Logicore/chess.js";
 class ChessPuzzle {
     constructor() {
         this.rating = 1000;
-        this.puzzle;
-        this.puzzlesByRating = {};
+        this.puzzles = [];
     }
 
     async load() {
@@ -40,32 +39,48 @@ class ChessPuzzle {
                 dailyDate: row.DailyDate || null,
             };
 
-            const bucket = parseInt(puzzle.rating / 200) * 200;
-            this.puzzlesByRating[bucket] ||= [];
-            this.puzzlesByRating[bucket].push(puzzle);
+            this.puzzles.push(puzzle);
         }
 
+        this.puzzles = this.puzzles.sort((a, b) => a.rating - b.rating);
         console.log(`Loaded ${lines.slice(1).length} puzzles`);
     }
 
-    getNextPuzzle() {
-        this.puzzle = {
-            fen: DEFAULT_FEN,
-        };
-        return this.puzzle;
+    lowerBound(rating) {
+        let left = 0;
+        let right = this.puzzles.length;
+
+        while (left < right) {
+            const mid = Math.floor((left + right) / 2);
+
+            if (this.puzzles[mid].rating < rating) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        return left;
+    }
+
+    getRandomPuzzle(rating, range=100) {
+        const minIndex = this.lowerBound(rating - range);
+        const maxIndex = this.lowerBound(rating + range + 1);
+
+        if (minIndex === maxIndex) return null;
+
+        const index = minIndex + Math.floor(Math.random() * (maxIndex - minIndex));
+        return this.puzzles[index];
     }
 
 
-    evaluateMove(move) {
+    evaluateMove(puzzle, move) {
         return false;
     }
 }
 
 class ChessPosition {
     constructor() {
-        this.rating = 1000;
-        this.position;
-        this.gamesByRating = {};
+        this.games = [];
     }
 
     parsePGN(pgn) {
@@ -176,25 +191,56 @@ class ChessPosition {
             const game = this.parsePGN(pgn);
 
             if (game.whiteElo === null || game.blackElo === null) continue;
-
-            const avgElo = (game.whiteElo + game.blackElo) / 2;
-            const bucket = parseInt(avgElo / 200) * 200;
-            this.gamesByRating[bucket] ||= [];
-            this.gamesByRating[bucket].push(game);
+            game.rating = Math.floor((game.whiteElo + game.blackElo) / 2)
+            this.games.push(game);
         }
 
+        this.games = this.games.sort((a, b) => a.rating - b.rating);
         console.log(`Loaded ${games.length} games`);
     }
 
-    getNextPosition() {
-        this.position = {
-            fen: DEFAULT_FEN,
-        };
-        return this.position;
+    lowerBound(rating) {
+        let left = 0;
+        let right = this.games.length;
+
+        while (left < right) {
+            const mid = Math.floor((left + right) / 2);
+
+            if (this.games[mid].rating < rating) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        return left;
     }
 
+    getRandomMoveIndex(game) {
+        const total = game.moves.length;
 
-    evaluateMove(move) {
+        // At least 2 full moves played, 1 full move remaining
+        const min = 4;
+        const max = total - 2;
+
+        if (max < min) return Math.ceil(game.moves.length / 2);
+
+        return min + Math.floor(Math.random() * (max - min + 1));
+    }
+
+    getRandomPosition(rating, range=100) {
+        const minIndex = this.lowerBound(rating - range);
+        const maxIndex = this.lowerBound(rating + range + 1);
+
+        if (minIndex === maxIndex) return null;
+
+        const index = minIndex + Math.floor(Math.random() * (maxIndex - minIndex));
+        const position = structuredClone(this.games[index]);
+        const moveIndex = this.getRandomMoveIndex(position);
+        position.moves = position.moves.slice(0, moveIndex);
+        return position;
+    }
+
+    evaluateMove(position, move) {
         const score = -1;
         return score;
     }
@@ -210,6 +256,8 @@ class ChessChallenge {
         this.pool = [];
         this.chessPuzzle = new ChessPuzzle();
         this.chessPosition = new ChessPosition();
+        this.puzzleRating = 1000;
+        this.positionRating = 1000;
         this.challenge;
     }
 
@@ -232,20 +280,21 @@ class ChessChallenge {
         const [newPool, value] = ChessChallenge.randomPoolNumber(this.pool, 6);
         this.pool = newPool;
 
-        const isPuzzle = value % 2 == 2;
+        const isPuzzle = value % 2 === 0;
         if (isPuzzle) {
             this.challenge = {
                 type: ChessChallenge.PUZZLE,
-                puzzle: this.chessPuzzle.getNextPuzzle(),
+                puzzle: this.chessPuzzle.getRandomPuzzle(this.puzzleRating),
             };
+            this.chess = new Chess(this.challenge.puzzle.fen);
         } else {
             this.challenge = {
                 type: ChessChallenge.POSITION,
-                position: this.chessPosition.getNextPosition(),
+                position: this.chessPosition.getRandomPosition(this.positionRating),
             };
+            this.chess = new Chess();
+            this.challenge.position.moves.forEach(entry => this.chess.makeMove(entry.move));
         }
-
-        this.chess = new Chess(this.challenge.fen);
     }
 
     evaluateMove(move) {
@@ -477,7 +526,7 @@ document.addEventListener("mousemove", event => {
 });
 
 function performPieceMove(piece, fromRow, fromCol, toRow, toCol, promotion=null) {
-    const moveResult = challenge.chess.move({
+    const moveResult = challenge.chess.makeMove({
         from: [fromRow, fromCol],
         to: [toRow, toCol],
         promotion
@@ -634,7 +683,7 @@ function nextChallenge() {
     removeChessPieces();
     removeHelpers();
     svg_utils.removeAllSVG();
-    fenToChessboard(challenge.fen);
+    fenToChessboard(challenge.chess.getFen());
 }
 nextChallenge();
 
