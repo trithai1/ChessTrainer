@@ -22,7 +22,7 @@ promotionOverlay.onclick = () => {
     promotionOverlay.style.display = "none";
 };
 
-function openPromotionOverlay(piece, fromRow, fromCol, toRow, toCol) {
+function openPromotionOverlay(fromRow, fromCol, toRow, toCol) {
     promotionOverlay.style.display = "grid";
     const options = [qPromotion, nPromotion, rPromotion, bPromotion];
     const increment = toRow <= 4 ? 1 : -1;
@@ -39,23 +39,39 @@ function openPromotionOverlay(piece, fromRow, fromCol, toRow, toCol) {
 
     qPromotion.onclick = () => {
         promotionOverlay.style.display = "none";
-        performPieceMove(piece, fromRow, fromCol, toRow, toCol, CHESS_PIECE.QUEEN);
+        performChallengeMove({
+            from: {row: fromRow, col: fromCol},
+            to: {row: toRow, col: toCol},
+            promotion: CHESS_PIECE.QUEEN,
+        });
     };
 
     nPromotion.onclick = () => {
         promotionOverlay.style.display = "none";
-        performPieceMove(piece, fromRow, fromCol, toRow, toCol, CHESS_PIECE.KNIGHT);
+        performChallengeMove({
+            from: {row: fromRow, col: fromCol},
+            to: {row: toRow, col: toCol},
+            promotion: CHESS_PIECE.KNIGHT,
+        });
     };
 
     rPromotion.onclick = () => {
         promotionOverlay.style.display = "none";
-        performPieceMove(piece, fromRow, fromCol, toRow, toCol, CHESS_PIECE.ROOK);
+        performChallengeMove({
+            from: {row: fromRow, col: fromCol},
+            to: {row: toRow, col: toCol},
+            promotion: CHESS_PIECE.ROOK,
+        });
     };
 
     bPromotion.onclick = () => {
         promotionOverlay.style.display = "none";
-        performPieceMove(piece, fromRow, fromCol, toRow, toCol, CHESS_PIECE.BISHOP);
-    };
+        performChallengeMove({
+            from: {row: fromRow, col: fromCol},
+            to: {row: toRow, col: toCol},
+            promotion: CHESS_PIECE.BISHOP,
+        });
+    }
 }
 
 const chessContainer = document.getElementById("chess-container");
@@ -227,57 +243,58 @@ document.addEventListener("mousemove", event => {
     draggingPiece.style.scale = 1;
 });
 
-function performPieceMove(piece, fromRow, fromCol, toRow, toCol, promotion=null) {
-    const move = {
-        from: [fromRow, fromCol],
-        to: [toRow, toCol],
-        promotion
-    };
+function getChessPiece(row, col, piece=null) {
+    piece ||= challenge.chess.getPiece(row, col);
+    return document.getElementsByClassName(`piece ${piece.css} cell-${row}-${col}`)[0];
+}
 
-    const validMove = challenge.chess.verifyMove(move);
+function revertPiece(row, col, piece=null) {
+    piece ||= getChessPiece(row, col);
+    piece.className = prevClassName;
+    piece.style.gridRow = row + 1;
+    piece.style.gridColumn = col + 1;
+    piece.style.transform = "";
+    piece.style.zIndex = spec.PAGE_INDEX.PIECE;
+}
 
-    if (!validMove) {
-        // selectedPiece = toRow === fromRow && toCol === fromCol ? piece : null;
-        piece.className = prevClassName;
-        piece.style.gridRow = fromRow + 1;
-        piece.style.gridColumn = fromCol + 1;
-        piece.style.transform = "";
-        piece.style.zIndex = spec.PAGE_INDEX.PIECE;
+function performPieceMove(chess, move) {
+    move = challenge.chess.parseChessMove(move);
+    const piece = getChessPiece(move.from.row, move.from.col);
+    const moveResult = chess.makeMove(move);
+    if (!moveResult.success) {
+        // selectedPiece = move.to.row === move.from.row && move.to.col === move.from.col ? piece : null;
+        revertPiece(move.from.row, move.from.col, piece);
         return false;
     }
 
-    const moveResult = challenge.chess.makeMove(move);
-
     const castle = moveResult.kingsideCastle ?? moveResult.queensideCastle ?? null;
     if (castle) {
-        toRow = castle.king.row; toCol = castle.kingFile;
-        piece.className = `piece ${castle.king.piece.css} cell-${toRow}-${toCol}`;
+        piece.className = `piece ${castle.king.piece.css} cell-${castle.king.row}-${castle.kingFile}`;
         piece.style.gridRow = castle.king.row + 1;
         piece.style.gridColumn = castle.kingFile + 1;
         piece.style.transform = "";
         piece.style.zIndex = spec.PAGE_INDEX.PIECE;
 
-        const rookPiece = document.getElementsByClassName(`piece ${castle.rook.piece.css} cell-${castle.rook.row}-${castle.rook.col}`)[0];
+        const rookPiece = getChessPiece(castle.rook.row, castle.rook.col);
         rookPiece.className = `piece ${castle.rook.piece.css} cell-${castle.rook.row}-${castle.rookFile}`;
         rookPiece.style.gridRow = castle.rook.row + 1;
         rookPiece.style.gridColumn = castle.rookFile + 1;
         rookPiece.style.transform = "";
         rookPiece.style.zIndex = spec.PAGE_INDEX.PIECE;
     } else {
-        piece.className = `piece ${moveResult.piece.css} cell-${toRow}-${toCol}`;
-        piece.style.gridRow = toRow + 1;
-        piece.style.gridColumn = toCol + 1;
+        piece.className = `piece ${moveResult.piece.css} cell-${move.to.row}-${move.to.col}`;
+        piece.style.gridRow = move.to.row + 1;
+        piece.style.gridColumn = move.to.col + 1;
         piece.style.transform = "";
         piece.style.zIndex = spec.PAGE_INDEX.PIECE;
+        
+        if (moveResult.promotion)
+            piece.className = `piece ${moveResult.promotion.css} cell-${move.to.row}-${move.to.col}`;
     }
 
     if (moveResult.captured) {
-        const capturedPieces = document.getElementsByClassName(`piece ${moveResult.captured.piece.css} cell-${moveResult.captured.row}-${moveResult.captured.col}`);
-        [...capturedPieces].forEach(element => element.remove());
-    }
-
-    if (moveResult.promotion) {
-        piece.className = `piece ${moveResult.promotion.css} cell-${toRow}-${toCol}`;
+        const capturedPiece = getChessPiece(moveResult.captured.row, moveResult.captured.col, moveResult.captured.piece);
+        capturedPiece.remove();
     }
 
     playSound(moveResult);
@@ -287,12 +304,31 @@ function performPieceMove(piece, fromRow, fromCol, toRow, toCol, promotion=null)
     else if (moveResult.gameStatus === GAME_STATUS.BLACK_WIN) { alert("BLACK WINS!"); }
     else if (moveResult.gameStatus === GAME_STATUS.DRAW) { alert("DRAW."); }
 
-    if (toRow != fromRow || toCol != fromCol){
+    if (move.to.row != move.from.row || move.to.col != move.from.col){
         removeHelpers();
         removeMoveHighlight();
-        addMoveHighlight(fromRow, fromCol, toRow, toCol);
+        addMoveHighlight(move.from.row, move.from.col, move.to.row, move.to.col);
     }
     return true;
+}
+
+function performChallengeMove(move) {
+    move = challenge.chess.parseChessMove(move);
+    let evaluation;
+    if (challenge.chess.verifyMove(move)) {
+        evaluation = challenge.evaluateMove(move);
+        if (!evaluation.isCorrect) {
+            console.log("Bad Move!");
+            revertPiece(move.from.row, move.from.col);
+            return false;
+        }
+    }
+    
+    performPieceMove(challenge.chess, move);
+    if (evaluation.isSolved) console.log("You Solved it!");
+    else console.log("Good Move!");
+
+    if (evaluation.nextMove) performPieceMove(challenge.chess, evaluation.nextMove);
 }
 
 function playSound(moveResult) {
@@ -322,11 +358,15 @@ window.addEventListener("mouseup", event => {
         draggingPiece.style.gridColumn = prevCol + 1;
         draggingPiece.style.transform = "";
         draggingPiece.style.zIndex = spec.PAGE_INDEX.PIECE;
-        openPromotionOverlay(draggingPiece, prevRow, prevCol, row, col);
+        openPromotionOverlay(prevRow, prevCol, row, col);
         draggingPiece = null;
         return;
     }
-    performPieceMove(draggingPiece, prevRow, prevCol, row, col);
+    performChallengeMove({
+        from: {row: prevRow, col: prevCol},
+        to: {row: row, col: col},
+        promotion: null,
+    });
     draggingPiece = null;
 });
 
@@ -385,13 +425,16 @@ function removeChessPieces() {
     chessGrid.querySelectorAll(".piece").forEach(element => element.remove());
 }
 
-function nextChallenge() {
-    challenge.setupChallenge();
+function setupChallenge() {
+    challenge.nextChallenge();
     removeChessPieces();
     removeHelpers();
     svg_utils.removeAllSVG();
     fenToChessboard(challenge.chess.getFen());
-}
-nextChallenge();
 
-nextChallengeEl.addEventListener("click", nextChallenge);
+    const firstMove = challenge.challenge.puzzle?.moves[0] ?? challenge.challenge.position.moves[-1];
+    performPieceMove(challenge.chess, firstMove);
+}
+setupChallenge();
+
+nextChallengeEl.addEventListener("click", setupChallenge);

@@ -26,7 +26,7 @@ export function finalizeDraggingSVG() {
 }
 
 export function draw(startRow, startCol, endRow, endCol, className=undefined, rows=8, cols=8) {
-    if (Math.min(startRow, startCol, endRow, endCol) < 1 || Math.max(startRow, endRow) >= rows || Math.max(startCol, endCol) >= cols) {
+    if (Math.min(startRow, startCol, endRow, endCol) < 0 || Math.max(startRow, endRow) >= rows || Math.max(startCol, endCol) >= cols) {
         console.warn(`Invalid rows and columns to draw svg: ${startRow} ${startCol} ${endRow} ${endCol}`);
         return;
     }

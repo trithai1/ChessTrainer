@@ -160,7 +160,7 @@ export default class ChessPosition {
         return position;
     }
 
-    evaluateMove(position, move) {
+    evaluateMove(fen, move) {
         const score = -1;
         return false;
     }
