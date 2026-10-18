@@ -3,6 +3,7 @@ import * as svg_utils from "./svg_utils.js";
 import {DEFAULT_FEN, PIECE_COLOR, CHECK_STATE, GAME_STATUS, PIECE_BY_FEN, CHESS_PIECE} from "../../Logicore/chess_constants.js";
 import * as utils from "../../Logicore/utils.js";
 import ChessChallenge from "./chessChallenge.js";
+import Chess from "../Logicore/chess.js";
 
 const clamp = (min, num, max) => Math.min(Math.max(num, min), max);
 
@@ -17,6 +18,9 @@ const qPromotion = document.getElementById("promotion-q");
 const nPromotion = document.getElementById("promotion-n");
 const rPromotion = document.getElementById("promotion-r");
 const bPromotion = document.getElementById("promotion-b");
+
+const challenge = new ChessChallenge();
+await challenge.load();
 
 promotionOverlay.onclick = () => {
     promotionOverlay.style.display = "none";
@@ -70,15 +74,12 @@ let draggingPiece = null, selectedPiece = null;
 let offSetY = 0;
 let offSetX = 0;
 
-const challenge = new ChessChallenge();
-await challenge.load();
-
 function removeHelpers() {
     const highlightHelpers = document.getElementsByClassName("helper");
     [...highlightHelpers].forEach(element => element.remove());
 }
 
-function addHelpers(row, col) {
+function addHelpers(chess, row, col) {
     // add a highlight div to the board where you clicked. and helper x
     // for now just add highlight
     const highlightHelper = document.createElement("div");
@@ -88,10 +89,10 @@ function addHelpers(row, col) {
     highlightHelper.zIndex = spec.PAGE_INDEX.HELPER;
     chessGrid.appendChild(highlightHelper);
 
-    const moves = challenge.chess.moves([row, col]);
+    const moves = chess.moves([row, col]);
     for (let i = 0; i < moves.length; i++) {
         const [_row, _col] = moves[i];
-        const castle = challenge.chess.getCastle();
+        const castle = chess.getCastle();
         if (_row == null && _col == true) { // castle kingside
             moves.push([row, col + 2]);
             moves.push([row, castle.kingside.rook.col]);
@@ -105,7 +106,7 @@ function addHelpers(row, col) {
 
         const moveHelper = document.createElement("div");
         
-        if (challenge.chess.isOpenSquare(_row, _col)) {
+        if (chess.isOpenSquare(_row, _col)) {
             const moveCircle = document.createElement("div");
             moveCircle.className = "helper move-circle";
             moveCircle.zIndex = spec.PAGE_INDEX.HELPER;
@@ -209,7 +210,7 @@ function fenToChessboard(fen=DEFAULT_FEN) {
 
             removeHelpers();
             if (challenge.chess.isActivePiece(prevRow, prevCol)) {
-                addHelpers(prevRow, prevCol);
+                addHelpers(challenge.chess, prevRow, prevCol);
             }
         });
         chessGrid.appendChild(chessPiece);
@@ -231,13 +232,13 @@ document.addEventListener("mousemove", event => {
     draggingPiece.style.scale = 1;
 });
 
-function getChessPiece(row, col, piece=null) {
-    piece ||= challenge.chess.getPiece(row, col);
+function getChessPiece(chess, row, col, piece=null) {
+    piece ||= chess.getPiece(row, col);
     return document.getElementsByClassName(`piece ${piece.css} cell-${row}-${col}`)[0];
 }
 
-function revertPiece(row, col, piece=null) {
-    piece ||= getChessPiece(row, col);
+function revertPiece(chess, row, col, piece=null) {
+    piece ||= getChessPiece(chess, row, col);
     piece.className = prevClassName;
     piece.style.gridRow = row + 1;
     piece.style.gridColumn = col + 1;
@@ -246,12 +247,12 @@ function revertPiece(row, col, piece=null) {
 }
 
 function performPieceMove(chess, move) {
-    move = challenge.chess.parseChessMove(move);
-    const piece = getChessPiece(move.from.row, move.from.col);
+    move = chess.parseChessMove(move);
+    const piece = getChessPiece(chess, move.from.row, move.from.col);
     const moveResult = chess.makeMove(move);
     if (!moveResult.success) {
         // selectedPiece = move.to.row === move.from.row && move.to.col === move.from.col ? piece : null;
-        revertPiece(move.from.row, move.from.col, piece);
+        revertPiece(chess, move.from.row, move.from.col, piece);
         return false;
     }
 
@@ -263,7 +264,7 @@ function performPieceMove(chess, move) {
         piece.style.transform = "";
         piece.style.zIndex = spec.PAGE_INDEX.PIECE;
 
-        const rookPiece = getChessPiece(castle.rook.row, castle.rook.col);
+        const rookPiece = getChessPiece(chess, castle.rook.row, castle.rook.col);
         rookPiece.className = `piece ${castle.rook.piece.css} cell-${castle.rook.row}-${castle.rookFile}`;
         rookPiece.style.gridRow = castle.rook.row + 1;
         rookPiece.style.gridColumn = castle.rookFile + 1;
@@ -281,7 +282,7 @@ function performPieceMove(chess, move) {
     }
 
     if (moveResult.captured) {
-        const capturedPiece = getChessPiece(moveResult.captured.row, moveResult.captured.col, moveResult.captured.piece);
+        const capturedPiece = getChessPiece(chess, moveResult.captured.row, moveResult.captured.col, moveResult.captured.piece);
         capturedPiece.remove();
     }
 
@@ -307,7 +308,7 @@ function performChallengeMove(move) {
         evaluation = challenge.evaluateMove(move);
         if (!evaluation.isCorrect) {
             console.log("Bad Move!");
-            revertPiece(move.from.row, move.from.col);
+            revertPiece(challenge.chess, move.from.row, move.from.col);
             return false;
         }
     }
@@ -420,10 +421,20 @@ function setupChallenge() {
     removeChessPieces();
     removeHelpers();
     svg_utils.removeAllSVG();
-    fenToChessboard(challenge.chess.getFen());
 
-    const firstMove = challenge.challenge.puzzle?.moves[0] ?? challenge.challenge.position.moves[-1];
-    performPieceMove(challenge.chess, firstMove);
+    let chess, firstMove;
+    if (challenge.challenge.type === ChessChallenge.PUZZLE) {
+        chess = new Chess(challenge.challenge.puzzle.fen);
+        firstMove = challenge.challenge.puzzle.moves[0];
+    }
+    else {
+        chess = new Chess();
+        challenge.challenge.position.moves.slice(0, -1).forEach(entry => chess.makeMove(entry.move));
+        firstMove = challenge.challenge.position.moves.at(-1).move;
+    }
+
+    fenToChessboard(chess.getFen());
+    performPieceMove(chess, firstMove);
 }
 setupChallenge();
 

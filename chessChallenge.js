@@ -1,6 +1,7 @@
 import Chess from "../../Logicore/chess.js";
 import ChessPuzzle from "./chessPuzzle.js";
 import ChessPosition from "./chessPosition.js";
+import ChessAnalysis from "./chessAnalysis.js";
 
 export default class ChessChallenge {
     // Type
@@ -12,6 +13,7 @@ export default class ChessChallenge {
         this.pool = [];
         this.chessPuzzle = new ChessPuzzle();
         this.chessPosition = new ChessPosition();
+        this.chessAnalysis = new ChessAnalysis();
         this.puzzleRating = 1000;
         this.positionRating = 1000;
         this.challenge;
@@ -32,11 +34,32 @@ export default class ChessChallenge {
         return [pool, value];
     }
 
+    getRandomNumber5(minElo = 0, maxElo = 3000) {
+        const t = Math.max(0, Math.min(1, (this.positionRating - minElo) / (maxElo - minElo)));
+
+        // Weights for numbers 1-6
+        const lowElo  = [86, 8, 3, 2, 1];
+        const highElo = [28, 40, 28, 2.5, 1.5];
+
+        const weights = lowElo.map((w, i) =>
+            w + (highElo[i] - w) * t
+        );
+
+        let roll = Math.random() * 100;
+
+        for (let i = 0; i < weights.length; i++) {
+            roll -= weights[i];
+            if (roll < 0) return i + 1;
+        }
+
+        return 1;
+    }
+
     nextChallenge() {
         const [newPool, value] = ChessChallenge.randomPoolNumber(this.pool, 6);
         this.pool = newPool;
 
-        const isPuzzle = true; // value % 2 === 0;
+        const isPuzzle = false; // value % 2 === 0;
         if (isPuzzle) {
             this.challenge = {
                 type: ChessChallenge.PUZZLE,
@@ -44,25 +67,31 @@ export default class ChessChallenge {
                 moveIndex: 1,
             };
             this.chess = new Chess(this.challenge.puzzle.fen);
+            this.chess.makeMove(this.challenge.puzzle.moves[0]);
         } else {
             this.challenge = {
                 type: ChessChallenge.POSITION,
                 position: this.chessPosition.getRandomPosition(this.positionRating),
+                maxMoves: this.getRandomNumber5(),
+                moveIndex: 1,
+                currentScore,
+                bestMove,
             };
             this.chess = new Chess();
-            this.challenge.position.moves.slice(0, -1).forEach(entry => this.chess.makeMove(entry.move));
+            this.challenge.position.moves.forEach(entry => this.chess.makeMove(entry.move));
         }
     }
 
     evaluateMove(move) {
-        let evaluation;
+        let evaluation = {
+            isCorrect: false,
+            isSolved: false,
+            nextMove: null,
+        };
+        
         if (this.challenge.type === ChessChallenge.PUZZLE) {
             const moveUCI = this.chess.parseToUCINotation(move);
-            evaluation = {
-                isCorrect: this.chessPuzzle.evaluateMove(this.challenge.puzzle, this.challenge.moveIndex, moveUCI),
-                isSolved: false,
-                nextMove: null,
-            };
+            evaluation.isCorrect = this.chessPuzzle.evaluateMove(this.challenge.puzzle, this.challenge.moveIndex, moveUCI);
             if (evaluation.isCorrect) {
                 this.challenge.moveIndex++;
                 if(this.challenge.moveIndex < this.challenge.puzzle.moves.length) {
@@ -73,7 +102,18 @@ export default class ChessChallenge {
                 } else evaluation.isSolved = true;
             }
         } else if (this.challenge.type === ChessChallenge.POSITION) {
-            evaluation = this.chessPosition.evaluateMove(this.challenge.chess.getFen(), move);
+            const moveScore = this.chessPosition.evaluateMove(this.challenge.chess.getFen(), move);
+            evaluation.isCorrect = false;
+            evaluation.nextMove = null;
+            evaluation.moveEval = "bad";
+
+            if (evaluation.isCorrect) {
+                this.challenge.moveIndex++;
+                if (this.challenge.moveIndex > this.challenge.maxMoves) {
+                    evaluation.isSolved = true;
+                    return evaluation;
+                }
+            }
         }
         return evaluation;
     }
