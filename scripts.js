@@ -22,55 +22,43 @@ promotionOverlay.onclick = () => {
     promotionOverlay.style.display = "none";
 };
 
-function openPromotionOverlay(fromRow, fromCol, toRow, toCol) {
+function openPromotionOverlay(move) {
     promotionOverlay.style.display = "grid";
     const options = [qPromotion, nPromotion, rPromotion, bPromotion];
-    const increment = toRow <= 4 ? 1 : -1;
-    let row = toRow;
+    const increment = move.to.row <= 4 ? 1 : -1;
+    let row = move.to.row;
     const [color, img] = chess.activeColor == PIECE_COLOR.WHITE ? ["w", "white_piece_frame.png"] : ["b", "black_piece_frame.png"];
     for (const option of options) {
         option.style.backgroundImage = `url(assets/img/${img})`;
         const promotionPiece = option.querySelector(".promotion-piece");
         promotionPiece.className = color + promotionPiece.className.slice(1);
         option.style.gridRow = row + 1;
-        option.style.gridColumn = toCol + 1;
+        option.style.gridColumn = move.to.col + 1;
         row += increment;
     }
 
     qPromotion.onclick = () => {
         promotionOverlay.style.display = "none";
-        performChallengeMove({
-            from: {row: fromRow, col: fromCol},
-            to: {row: toRow, col: toCol},
-            promotion: CHESS_PIECE.QUEEN,
-        });
+        move.promotion = CHESS_PIECE.QUEEN;
+        performChallengeMove(move);
     };
 
     nPromotion.onclick = () => {
         promotionOverlay.style.display = "none";
-        performChallengeMove({
-            from: {row: fromRow, col: fromCol},
-            to: {row: toRow, col: toCol},
-            promotion: CHESS_PIECE.KNIGHT,
-        });
+        move.promotion = CHESS_PIECE.KNIGHT;
+        performChallengeMove(move);
     };
 
     rPromotion.onclick = () => {
         promotionOverlay.style.display = "none";
-        performChallengeMove({
-            from: {row: fromRow, col: fromCol},
-            to: {row: toRow, col: toCol},
-            promotion: CHESS_PIECE.ROOK,
-        });
+        move.promotion = CHESS_PIECE.ROOK;
+        performChallengeMove(move);
     };
 
     bPromotion.onclick = () => {
         promotionOverlay.style.display = "none";
-        performChallengeMove({
-            from: {row: fromRow, col: fromCol},
-            to: {row: toRow, col: toCol},
-            promotion: CHESS_PIECE.BISHOP,
-        });
+        move.promotion = CHESS_PIECE.BISHOP;
+        performChallengeMove(move);
     }
 }
 
@@ -351,22 +339,24 @@ window.addEventListener("mouseup", event => {
     let row = Math.floor((event.clientY - chessGridBounds.top) / (chessGridBounds.height/8));
     let col = Math.floor((event.clientX - chessGridBounds.left) / (chessGridBounds.width/8));
 
-    if (challenge.chess.isPromotion(prevRow, prevCol, row, col)) {
+    const move = {
+        from: {row: prevRow, col: prevCol},
+        to: {row: row, col: col},
+        promotion: null,
+    }
+
+    if (challenge.chess.isPromotion(move)) {
         selectedPiece = draggingPiece;
         draggingPiece.className = prevClassName;
         draggingPiece.style.gridRow = prevRow + 1;
         draggingPiece.style.gridColumn = prevCol + 1;
         draggingPiece.style.transform = "";
         draggingPiece.style.zIndex = spec.PAGE_INDEX.PIECE;
-        openPromotionOverlay(prevRow, prevCol, row, col);
+        openPromotionOverlay(move);
         draggingPiece = null;
         return;
     }
-    performChallengeMove({
-        from: {row: prevRow, col: prevCol},
-        to: {row: row, col: col},
-        promotion: null,
-    });
+    performChallengeMove(move);
     draggingPiece = null;
 });
 
