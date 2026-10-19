@@ -26,7 +26,7 @@ promotionOverlay.onclick = () => {
     promotionOverlay.style.display = "none";
 };
 
-function openPromotionOverlay(move) {
+async function openPromotionOverlay(move) {
     promotionOverlay.style.display = "grid";
     const options = [qPromotion, nPromotion, rPromotion, bPromotion];
     const increment = move.to.row <= 4 ? 1 : -1;
@@ -41,28 +41,28 @@ function openPromotionOverlay(move) {
         row += increment;
     }
 
-    qPromotion.onclick = () => {
+    qPromotion.onclick = async () => {
         promotionOverlay.style.display = "none";
         move.promotion = CHESS_PIECE.QUEEN;
-        performChallengeMove(move);
+        await performChallengeMove(move);
     };
 
-    nPromotion.onclick = () => {
+    nPromotion.onclick = async () => {
         promotionOverlay.style.display = "none";
         move.promotion = CHESS_PIECE.KNIGHT;
-        performChallengeMove(move);
+        await performChallengeMove(move);
     };
 
-    rPromotion.onclick = () => {
+    rPromotion.onclick = async () => {
         promotionOverlay.style.display = "none";
         move.promotion = CHESS_PIECE.ROOK;
-        performChallengeMove(move);
+        await performChallengeMove(move);
     };
 
-    bPromotion.onclick = () => {
+    bPromotion.onclick = async () => {
         promotionOverlay.style.display = "none";
         move.promotion = CHESS_PIECE.BISHOP;
-        performChallengeMove(move);
+        await performChallengeMove(move);
     }
 }
 
@@ -301,11 +301,11 @@ function performPieceMove(chess, move) {
     return true;
 }
 
-function performChallengeMove(move) {
+async function performChallengeMove(move) {
     move = challenge.chess.parseChessMove(move);
     let evaluation;
     if (challenge.chess.verifyMove(move)) {
-        evaluation = challenge.evaluateMove(move);
+        evaluation = await challenge.evaluateMove(move);
         if (!evaluation.isCorrect) {
             console.log("Bad Move!");
             revertPiece(challenge.chess, move.from.row, move.from.col);
@@ -334,7 +334,7 @@ function playSound(moveResult) {
     }
 }
 
-window.addEventListener("mouseup", event => {
+window.addEventListener("mouseup", async (event) => {
     if (!draggingPiece) return;
 
     let row = Math.floor((event.clientY - chessGridBounds.top) / (chessGridBounds.height/8));
@@ -353,11 +353,11 @@ window.addEventListener("mouseup", event => {
         draggingPiece.style.gridColumn = prevCol + 1;
         draggingPiece.style.transform = "";
         draggingPiece.style.zIndex = spec.PAGE_INDEX.PIECE;
-        openPromotionOverlay(move);
+        await openPromotionOverlay(move);
         draggingPiece = null;
         return;
     }
-    performChallengeMove(move);
+    await performChallengeMove(move);
     draggingPiece = null;
 });
 
@@ -416,8 +416,8 @@ function removeChessPieces() {
     chessGrid.querySelectorAll(".piece").forEach(element => element.remove());
 }
 
-function setupChallenge() {
-    challenge.nextChallenge();
+async function setupChallenge() {
+    await challenge.nextChallenge();
     removeChessPieces();
     removeHelpers();
     svg_utils.removeAllSVG();

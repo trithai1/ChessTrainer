@@ -2,6 +2,7 @@ import Chess from "../../Logicore/chess.js";
 import ChessPuzzle from "./chessPuzzle.js";
 import ChessPosition from "./chessPosition.js";
 import ChessAnalysis from "./chessAnalysis.js";
+import { DEFAULT_FEN } from "../Logicore/chess_constants.js";
 
 export default class ChessChallenge {
     // Type
@@ -22,6 +23,12 @@ export default class ChessChallenge {
     async load() {
         await this.chessPuzzle.load();
         await this.chessPosition.load();
+
+        let analysis = await this.chessAnalysis.requestAnalysis(DEFAULT_FEN);
+        console.log(analysis);
+
+        analysis = await this.chessAnalysis.requestAnalysis(DEFAULT_FEN, 'f3');
+        console.log(analysis);
     }
 
     static randomPoolNumber(pool, n) {
@@ -55,7 +62,7 @@ export default class ChessChallenge {
         return 1;
     }
 
-    nextChallenge() {
+    async nextChallenge() {
         const [newPool, value] = ChessChallenge.randomPoolNumber(this.pool, 6);
         this.pool = newPool;
 
@@ -77,12 +84,16 @@ export default class ChessChallenge {
                 currentScore,
                 bestMove,
             };
+
             this.chess = new Chess();
             this.challenge.position.moves.forEach(entry => this.chess.makeMove(entry.move));
+
+            const analysis = await this.chessAnalysis.requestAnalysis(this.chess.fen);
+
         }
     }
 
-    evaluateMove(move) {
+    async evaluateMove(move) {
         let evaluation = {
             isCorrect: false,
             isSolved: false,
