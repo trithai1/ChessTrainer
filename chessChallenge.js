@@ -23,12 +23,6 @@ export default class ChessChallenge {
     async load() {
         await this.chessPuzzle.load();
         await this.chessPosition.load();
-
-        let analysis = await this.chessAnalysis.requestAnalysis(DEFAULT_FEN);
-        console.log(analysis);
-
-        analysis = await this.chessAnalysis.requestAnalysis(DEFAULT_FEN, 'f3');
-        console.log(analysis);
     }
 
     static randomPoolNumber(pool, n) {
@@ -81,15 +75,15 @@ export default class ChessChallenge {
                 position: this.chessPosition.getRandomPosition(this.positionRating),
                 maxMoves: this.getRandomNumber5(),
                 moveIndex: 1,
-                currentScore,
-                bestMove,
+                // currentScore,
+                // bestMove,
             };
 
             this.chess = new Chess();
             this.challenge.position.moves.forEach(entry => this.chess.makeMove(entry.move));
 
-            const analysis = await this.chessAnalysis.requestAnalysis(this.chess.fen);
-
+            const analysis = await this.chessAnalysis.requestAnalysis(this.chess.getFen());
+            console.log(analysis);
         }
     }
 
