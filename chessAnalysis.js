@@ -9,6 +9,6 @@ export default class ChessAnalysis {
             },
             body: fen,
         });
-        return response.json();
+        return response.json({fen});
     }
 }
