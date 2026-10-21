@@ -75,15 +75,16 @@ export default class ChessChallenge {
                 position: this.chessPosition.getRandomPosition(this.positionRating),
                 maxMoves: this.getRandomNumber5(),
                 moveIndex: 1,
-                // currentScore,
-                // bestMove,
+                currentScore: undefined,
+                bestMove: undefined,
             };
 
             this.chess = new Chess();
             this.challenge.position.moves.forEach(entry => this.chess.makeMove(entry.move));
 
-            const analysis = await this.chessAnalysis.requestAnalysis(this.chess.getFen());
-            console.log(analysis);
+            const analysis = this.chessAnalysis.requestAnalysis(this.chess.getFen());
+            this.challenge.currentScore = analysis.eval;
+            this.challenge.bestMove = analysis.move;
         }
     }
 
@@ -107,7 +108,12 @@ export default class ChessChallenge {
                 } else evaluation.isSolved = true;
             }
         } else if (this.challenge.type === ChessChallenge.POSITION) {
-            const moveScore = this.chessPosition.evaluateMove(this.challenge.chess.getFen(), move);
+            const chess = new Chess(this.challenge.chess.getFen());
+            chess.makeMove(move);
+            const analysis = this.chessPosition.evaluateMove(chess.getFen());
+
+            const moveScore = analysis.eval;
+
             evaluation.isCorrect = false;
             evaluation.nextMove = null;
             evaluation.moveEval = "bad";
