@@ -1,3 +1,5 @@
+import Chess from "../../Logicore/chess.js";
+
 export default class ChessPosition {
     constructor() {
         this.games = [];
@@ -161,8 +163,9 @@ export default class ChessPosition {
         return position;
     }
 
-    evaluateMove(fen, move) {
-        const score = 1;
-        return score;
+    async evaluateMove(chessAnalysis, fen, move) {
+        const chess = new Chess(fen);
+        chess.makeMove(move);
+        return chessAnalysis.requestAnalysis(chess.getFen());
     }
 }

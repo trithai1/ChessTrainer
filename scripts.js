@@ -232,13 +232,12 @@ document.addEventListener("mousemove", event => {
     draggingPiece.style.scale = 1;
 });
 
-function getChessPiece(chess, row, col, piece=null) {
-    piece ||= chess.getPiece(row, col);
+function getChessPiece(piece, row, col) {
     return document.getElementsByClassName(`piece ${piece.css} cell-${row}-${col}`)[0];
 }
 
-function revertPiece(chess, row, col, piece=null) {
-    piece ||= getChessPiece(chess, row, col);
+function revertPiece(piece, row, col) {
+    piece = getChessPiece(piece, row, col);
     piece.className = prevClassName;
     piece.style.gridRow = row + 1;
     piece.style.gridColumn = col + 1;
@@ -246,13 +245,11 @@ function revertPiece(chess, row, col, piece=null) {
     piece.style.zIndex = spec.PAGE_INDEX.PIECE;
 }
 
-function performPieceMove(chess, move) {
-    move = chess.parseChessMove(move);
-    const piece = getChessPiece(chess, move.from.row, move.from.col);
-    const moveResult = chess.makeMove(move);
+function applyMoveResult(moveResult) {
+    const piece = getChessPiece(moveResult.piece, moveResult.from.row, moveResult.from.col);
     if (!moveResult.success) {
         // selectedPiece = move.to.row === move.from.row && move.to.col === move.from.col ? piece : null;
-        revertPiece(chess, move.from.row, move.from.col, piece);
+        revertPiece(moveResult.piece, moveResult.from.row, moveResult.from.col, piece);
         return false;
     }
 
@@ -264,25 +261,26 @@ function performPieceMove(chess, move) {
         piece.style.transform = "";
         piece.style.zIndex = spec.PAGE_INDEX.PIECE;
 
-        const rookPiece = getChessPiece(chess, castle.rook.row, castle.rook.col);
+        const rook = moveResult.kingsideCastle ? moveResult.kingsideCastle.rook.piece : moveResult.queensideCastle.rook.piece;
+        const rookPiece = getChessPiece(rook, castle.rook.row, castle.rook.col);
         rookPiece.className = `piece ${castle.rook.piece.css} cell-${castle.rook.row}-${castle.rookFile}`;
         rookPiece.style.gridRow = castle.rook.row + 1;
         rookPiece.style.gridColumn = castle.rookFile + 1;
         rookPiece.style.transform = "";
         rookPiece.style.zIndex = spec.PAGE_INDEX.PIECE;
     } else {
-        piece.className = `piece ${moveResult.piece.css} cell-${move.to.row}-${move.to.col}`;
-        piece.style.gridRow = move.to.row + 1;
-        piece.style.gridColumn = move.to.col + 1;
+        piece.className = `piece ${moveResult.piece.css} cell-${moveResult.to.row}-${moveResult.to.col}`;
+        piece.style.gridRow = moveResult.to.row + 1;
+        piece.style.gridColumn = moveResult.to.col + 1;
         piece.style.transform = "";
         piece.style.zIndex = spec.PAGE_INDEX.PIECE;
         
         if (moveResult.promotion)
-            piece.className = `piece ${moveResult.promotion.css} cell-${move.to.row}-${move.to.col}`;
+            piece.className = `piece ${moveResult.promotion.css} cell-${moveResult.to.row}-${moveResult.to.col}`;
     }
 
     if (moveResult.captured) {
-        const capturedPiece = getChessPiece(chess, moveResult.captured.row, moveResult.captured.col, moveResult.captured.piece);
+        const capturedPiece = getChessPiece(moveResult.captured.piece, moveResult.captured.row, moveResult.captured.col);
         capturedPiece.remove();
     }
 
@@ -293,31 +291,39 @@ function performPieceMove(chess, move) {
     else if (moveResult.gameStatus === GAME_STATUS.BLACK_WIN) { alert("BLACK WINS!"); }
     else if (moveResult.gameStatus === GAME_STATUS.DRAW) { alert("DRAW."); }
 
-    if (move.to.row != move.from.row || move.to.col != move.from.col){
+    if (moveResult.to.row != moveResult.from.row || moveResult.to.col != moveResult.from.col){
         removeHelpers();
         removeMoveHighlight();
-        addMoveHighlight(move.from.row, move.from.col, move.to.row, move.to.col);
+        addMoveHighlight(moveResult.from.row, moveResult.from.col, moveResult.to.row, moveResult.to.col);
     }
     return true;
 }
 
+function performPieceMove(chess, move) {
+    move = chess.parseChessMove(move);
+    const moveResult = chess.makeMove(move);
+    return applyMoveResult(moveResult);
+}
+
 async function performChallengeMove(move) {
     move = challenge.chess.parseChessMove(move);
-    let evaluation;
+    let result;
     if (challenge.chess.verifyMove(move)) {
-        evaluation = await challenge.evaluateMove(move);
-        if (!evaluation.isCorrect) {
+        result = await challenge.submitMove(move);
+        if (!result.isCorrect) {
             console.log("Bad Move!");
-            revertPiece(challenge.chess, move.from.row, move.from.col);
+            const piece = challenge.chess.getPiece(move.from.row, move.from.col);
+            revertPiece(piece, move.from.row, move.from.col);
             return false;
         }
     }
     
-    performPieceMove(challenge.chess, move);
-    if (evaluation.isSolved) console.log("You Solved it!");
-    else console.log("Good Move!");
-
-    if (evaluation.nextMove) performPieceMove(challenge.chess, evaluation.nextMove);
+    applyMoveResult(result.curMoveResult);
+    if (result.isSolved) console.log("You Solved it!");
+    else {
+        console.log("Good Move!");
+        applyMoveResult(result.nextMoveResult);
+    }
 }
 
 function playSound(moveResult) {
