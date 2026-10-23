@@ -412,11 +412,6 @@ window.addEventListener("mouseup", event => {
 });
 
 const nextChallengeEl = document.getElementById("next-challenge");
-const getFenEl = document.getElementById("get-fen");
-
-getFenEl.onclick = (event) => {
-    console.log(challenge.chess.getFen());
-};
 
 function removeChessPieces() {
     chessGrid.querySelectorAll(".piece").forEach(element => element.remove());

@@ -7,10 +7,6 @@
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    <div id="button-panel">
-        <button id="get-fen">Get Fen</button>
-        <button id="next-challenge">Next</button>
-    </div>
     <div id="chess-container">
         <div id="chess-border">
             <div id="chess-grid">
@@ -30,6 +26,18 @@
                 </div>
                 <svg id="svg-container" viewBox="0 0 80 80"></svg>
             </div>
+        </div>
+        <div id="nav-panel">
+            <div class="rating">
+                <span class="rating-label">Puzzle Rating</span>
+                <span class="rating-value">1000</span>
+            </div>
+            <div class="rating">
+                <span class="rating-label">Position Rating</span>
+                <span class="rating-value">1000</span>
+            </div>
+            <p id="move-classification">Exellent!</p>
+            <button id="next-challenge">Next</button>
         </div>
     </div>
     <script type="module" src="./scripts.js"></script>

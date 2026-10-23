@@ -61,7 +61,7 @@ export default class ChessChallenge {
         const [newPool, value] = ChessChallenge.randomPoolNumber(this.pool, 6);
         this.pool = newPool;
 
-        const isPuzzle = false; // value % 2 === 0;
+        const isPuzzle = true; // value % 2 === 0;
         if (isPuzzle) {
             this.challenge = {
                 type: ChessChallenge.PUZZLE,
