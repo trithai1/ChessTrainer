@@ -2,6 +2,7 @@ import Chess from "../../Logicore/chess.js";
 import ChessPuzzle from "./chessPuzzle.js";
 import ChessPosition from "./chessPosition.js";
 import ChessAnalysis from "./chessAnalysis.js";
+import { PIECE_COLOR } from "../Logicore/chess_constants.js";
 
 export default class ChessChallenge {
     // Type
@@ -132,6 +133,12 @@ export default class ChessChallenge {
     }
 
     expectedPointLoss(evalBefore, evalAfter) {
+        // Convert evaluations to the player's perspective
+        const sign = this.chess.activeColor === PIECE_COLOR.WHITE ? 1 : -1;
+
+        evalBefore *= sign;
+        evalAfter *= sign;
+
         // Convert pawn evaluation into expected score (0-1)
         const expectedScore = (centiPawn) => 1 / (1 + Math.exp(-1.2 * centiPawn));
 
@@ -154,7 +161,7 @@ export default class ChessChallenge {
         return {
             categoryDiff: this.getEvalRange(curScore, curMate) - this.getEvalRange(prevScore, prevMate),
             normalizeDiff: this.normalizeEval(curScore, curMate) - this.normalizeEval(prevScore, prevMate),
-            classification: getMoveClassification(expectedPointLoss(prevScore, curScore)),
+            classification: this.getMoveClassification(this.expectedPointLoss(prevScore, curScore)),
         };
     }
 
@@ -207,7 +214,7 @@ export default class ChessChallenge {
         
         // Position Challenge
         } else if (this.challenge.type === ChessChallenge.POSITION) {
-            const analysis = await this.chessPosition.evaluateMove(this.chessAnalysis, this.challenge.chess.getFen(), move);
+            const analysis = await this.chessPosition.evaluateMove(this.chessAnalysis, this.chess.getFen(), move);
             const moveScore = analysis.eval;
             const moveMate = analysis.mate ? Number(analysis.mate) : null;
             const compare = this.compareEvals(this.challenge.currentScore, this.challenge.mate, moveScore, moveMate);
@@ -223,7 +230,7 @@ export default class ChessChallenge {
                 this.challenge.moveCount++;
                 if (this.challenge.moveCount < this.challenge.maxMoves) {
                     let analysis = await this.chessAnalysis.requestAnalysis(this.chess.getFen());
-                    this.chess.makeMove(analysis.move);
+                    result.nextMoveResult = this.chess.makeMove(analysis.move);
                     
                     analysis = await this.chessAnalysis.requestAnalysis(this.chess.getFen());
                     this.challenge.currentScore = analysis.eval;

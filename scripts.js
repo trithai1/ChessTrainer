@@ -319,7 +319,7 @@ async function performChallengeMove(move) {
     }
     
     applyMoveResult(result.curMoveResult);
-    if (result.solved) console.log(`You Solved it! ${classification}`);
+    if (result.solved) console.log(`You Solved it! ${classification} - puzzle(${challenge.puzzleRating}) - position(${challenge.positionRating})`);
     else {
         console.log(`Good Move! ${classification}`);
         applyMoveResult(result.nextMoveResult);

@@ -155,10 +155,9 @@ export default class ChessPosition {
 
         if (minIndex === maxIndex) return null;
 
-        const index = 61; // minIndex + Math.floor(Math.random() * (maxIndex - minIndex));
+        const index =  minIndex + Math.floor(Math.random() * (maxIndex - minIndex));
         const position = structuredClone(this.games[index]);
-        const moveIndex = 11; // this.getRandomMoveIndex(position);
-        console.log(index, moveIndex);
+        const moveIndex = this.getRandomMoveIndex(position);
         position.moves = position.moves.slice(0, moveIndex);
         return position;
     }
