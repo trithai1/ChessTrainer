@@ -17,7 +17,7 @@ export default class ChessChallenge {
         this.puzzleRating = 1000;
         this.positionRating = 1000;
         this.challenge;
-        this.isSolved = null;
+        this.pass = null;
     }
 
     async load() {
@@ -65,21 +65,25 @@ export default class ChessChallenge {
             this.challenge = {
                 type: ChessChallenge.PUZZLE,
                 puzzle: this.chessPuzzle.getRandomPuzzle(this.puzzleRating),
+                rating: undefined,
                 moveIndex: 1,
             };
+            this.challenge.rating = this.challenge.puzzle.rating;
             this.chess = new Chess(this.challenge.puzzle.fen);
             this.chess.makeMove(this.challenge.puzzle.moves[0]);
         } else {
             this.challenge = {
                 type: ChessChallenge.POSITION,
                 position: this.chessPosition.getRandomPosition(this.positionRating),
+                rating: undefined,
                 maxMoves: this.getRandomNumber5(),
                 moveCount: 0,
                 currentScore: undefined,
                 bestMove: undefined,
                 mate: undefined,
+                ratingChanges: [],
             };
-
+            this.challenge.rating = Math.floor((this.challenge.position.blackElo + this.challenge.position.whiteElo) / 2);
             this.chess = new Chess();
             this.challenge.position.moves.forEach(entry => this.chess.makeMove(entry.move));
 
@@ -88,7 +92,7 @@ export default class ChessChallenge {
             this.challenge.bestMove = analysis.move;
             this.challenge.mate = analysis.mate ? Number(analysis.mate) : null;
         }
-        this.isSolved = null;
+        this.pass = null;
     }
 
     getEvalRange(score, mate) {
@@ -127,14 +131,6 @@ export default class ChessChallenge {
         return sign * score;
     }
 
-    compareEvals(prevScore, prevMate, curScore, curMate) {
-        return {
-            categoryDiff: this.getEvalRange(curScore, curMate) - this.getEvalRange(prevScore, prevMate),
-            normalizeDiff: this.normalizeEval(curScore, curMate) - this.normalizeEval(prevScore, prevMate),
-            classification: getMoveClassification(expectedPointLoss(prevScore, curScore)),
-        };
-    }
-
     expectedPointLoss(evalBefore, evalAfter) {
         // Convert pawn evaluation into expected score (0-1)
         const expectedScore = (centiPawn) => 1 / (1 + Math.exp(-1.2 * centiPawn));
@@ -154,56 +150,102 @@ export default class ChessChallenge {
         return "blunder";
     }
 
-    getRatingChange(playerRating, challengeRating, solved, k=32) {
+    compareEvals(prevScore, prevMate, curScore, curMate) {
+        return {
+            categoryDiff: this.getEvalRange(curScore, curMate) - this.getEvalRange(prevScore, prevMate),
+            normalizeDiff: this.normalizeEval(curScore, curMate) - this.normalizeEval(prevScore, prevMate),
+            classification: getMoveClassification(expectedPointLoss(prevScore, curScore)),
+        };
+    }
+
+    getRatingChange(playerRating, challengeRating, solved, normalizeDiff=null, k=32) {
         const expected = 1 / (1 + 10 ** ((challengeRating - playerRating) / 400));
-        return Math.round(k * ((solved ? 1 : 0) - expected));
+        let ratingChange = Math.round(k * ((solved ? 1 : 0) - expected));
+
+        if (normalizeDiff) {
+            const diff = Math.max(0, normalizeDiff);
+            ratingChange *= Math.exp(-diff / 1.5);
+            ratingChange = Math.round(ratingChange);
+        }
+        return ratingChange
     }
 
     async submitMove(move) {
-        if (this.isSolved) return null;
-        let evaluation = {
-            isCorrect: false,
-            isSolved: this.isSolved,
+        if (this.pass) return null;
+        let result = {
+            correct: false,
+            solved: null,
             curMoveResult: null,
             nextMoveResult: null,
         };
         
+        // Puzzle Challenge
         if (this.challenge.type === ChessChallenge.PUZZLE) {
             const moveUCI = this.chess.parseToUCINotation(move);
-            evaluation.isCorrect = this.chessPuzzle.evaluateMove(this.challenge.puzzle, this.challenge.moveIndex, moveUCI);
-            if (evaluation.isCorrect) {
-                evaluation.curMoveResult = this.chess.makeMove(move);
+            result.correct = this.chessPuzzle.evaluateMove(this.challenge.puzzle, this.challenge.moveIndex, moveUCI);
+            if (result.correct) {
+                result.curMoveResult = this.chess.makeMove(move);
                 this.challenge.moveIndex++;
                 if (this.challenge.moveIndex < this.challenge.puzzle.moves.length) {
                     const nextMove = this.chess.parseChessMove(this.challenge.puzzle.moves[this.challenge.moveIndex]);
-                    evaluation.nextMoveResult = this.chess.makeMove(nextMove);
+                    result.nextMoveResult = this.chess.makeMove(nextMove);
                     this.challenge.moveIndex++;
-                } else if (this.isSolved === null) evaluation.isSolved = this.isSolved = true;
-            } else if (this.isSolved === null) evaluation.isSolved = this.isSolved = false;
+                } else {
+                    result.solved = true;
+                    if (this.pass === null) {
+                        this.pass = true;
+                        this.puzzleRating += this.getRatingChange(this.puzzleRating, this.challenge.rating, this.pass);
+                    }
+                }
+            } else {
+                result.solved = false;
+                if (this.pass === null) {
+                    this.pass = false;
+                    this.puzzleRating += this.getRatingChange(this.puzzleRating, this.challenge.rating, this.pass);
+                }
+            }
         
+        // Position Challenge
         } else if (this.challenge.type === ChessChallenge.POSITION) {
             const analysis = await this.chessPosition.evaluateMove(this.chessAnalysis, this.challenge.chess.getFen(), move);
             const moveScore = analysis.eval;
             const moveMate = analysis.mate ? Number(analysis.mate) : null;
             const compare = this.compareEvals(this.challenge.currentScore, this.challenge.mate, moveScore, moveMate);
 
-            // category change of 0-1 is +elo, category change of 2+ is -elo
-            // get how much elo change
-            // adjust the elo change based on normalized difference
-            evaluation.isCorrect = compare.categoryDiff < 2;
-            evaluation.moveEval = compare.classification;
+            result.correct = compare.categoryDiff < 2;
+            result.classification = compare.classification;
 
-            if (evaluation.isCorrect) {
-                this.chess.makeMove()
-                evaluation.nextMove = undefined; // this.chess.parseChessMove(move);
+            if (result.correct) {
+                let ratingChange = this.getRatingChange(this.positionRating, this.challenge.rating, true, compare.normalizeDiff);
+                this.challenge.ratingChanges.push(ratingChange);
+
+                result.curMoveResult = this.chess.makeMove(move);
                 this.challenge.moveCount++;
                 if (this.challenge.moveCount < this.challenge.maxMoves) {
-                    this.challenge.currentScore = undefined;
-                    this.challenge.bestMove = undefined;
-                    this.challenge.mate = undefined;
-                } else if (this.isSolved === null) evaluation.isSolved = this.isSolved = true;
-            } else if (this.isSolved === null) evaluation.isSolved = this.isSolved = false;
+                    let analysis = await this.chessAnalysis.requestAnalysis(this.chess.getFen());
+                    this.chess.makeMove(analysis.move);
+                    
+                    analysis = await this.chessAnalysis.requestAnalysis(this.chess.getFen());
+                    this.challenge.currentScore = analysis.eval;
+                    this.challenge.bestMove = analysis.move;
+                    this.challenge.mate = analysis.mate ? Number(analysis.mate) : null;
+                } else {
+                    result.solved = true;
+                    if (this.pass === null) {
+                        this.pass = true;
+                        const sum = this.challenge.ratingChanges.reduce((acc, value) => acc + value, 0);
+                        this.positionRating = Math.min(3600, this.positionRating + Math.round(sum / this.challenge.ratingChanges.length));
+                    }
+                }
+            } else {
+                result.solved = false;
+                if (this.pass === null) {
+                    this.pass = false;
+                    const ratingChange = this.getRatingChange(this.positionRating, this.challenge.rating, false);
+                    this.positionRating = Math.max(0, this.positionRating + ratingChange);
+                }
+            }
         }
-        return evaluation;
+        return result;
     }
 }

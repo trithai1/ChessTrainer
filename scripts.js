@@ -307,21 +307,21 @@ function performPieceMove(chess, move) {
 
 async function performChallengeMove(move) {
     move = challenge.chess.parseChessMove(move);
-    let result;
-    if (challenge.chess.verifyMove(move)) {
-        result = await challenge.submitMove(move);
-        if (!result.isCorrect) {
-            console.log("Bad Move!");
-            const piece = challenge.chess.getPiece(move.from.row, move.from.col);
-            revertPiece(piece, move.from.row, move.from.col);
-            return false;
-        }
+    let result = challenge.chess.verifyMove(move) ? await challenge.submitMove(move) : null;
+    
+    const classification = result.classification ?? "";
+    if (!result.correct) console.log(`Bad Move! ${classification}`);
+    
+    if (!result || !result.correct) {
+        const piece = challenge.chess.getPiece(move.from.row, move.from.col);
+        revertPiece(piece, move.from.row, move.from.col);
+        return false;
     }
     
     applyMoveResult(result.curMoveResult);
-    if (result.isSolved) console.log("You Solved it!");
+    if (result.solved) console.log(`You Solved it! ${classification}`);
     else {
-        console.log("Good Move!");
+        console.log(`Good Move! ${classification}`);
         applyMoveResult(result.nextMoveResult);
     }
 }
