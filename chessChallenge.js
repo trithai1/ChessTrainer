@@ -2,7 +2,7 @@ import Chess from "../../Logicore/chess.js";
 import ChessPuzzle from "./chessPuzzle.js";
 import ChessPosition from "./chessPosition.js";
 import ChessAnalysis from "./chessAnalysis.js";
-import { PIECE_COLOR } from "../Logicore/chess_constants.js";
+import { GAME_STATUS, PIECE_COLOR } from "../Logicore/chess_constants.js";
 
 export default class ChessChallenge {
     // Type
@@ -214,7 +214,10 @@ export default class ChessChallenge {
         
         // Position Challenge
         } else if (this.challenge.type === ChessChallenge.POSITION) {
-            const analysis = await this.chessPosition.evaluateMove(this.chessAnalysis, this.chess.getFen(), move);
+            const isBest = this.sameMove(move, this.challenge.bestMove);
+            const analysis = isBest ?
+                { eval: this.challenge.currentScore, mate: this.challenge.mate, move: this.challenge.bestMove } :
+                await this.chessPosition.evaluateMove(this.chessAnalysis, this.chess.getFen(), move);
             const moveScore = analysis.eval;
             const moveMate = analysis.mate ? Number(analysis.mate) : null;
             const compare = this.compareEvals(this.challenge.currentScore, this.challenge.mate, moveScore, moveMate);
@@ -228,7 +231,7 @@ export default class ChessChallenge {
 
                 result.curMoveResult = this.chess.makeMove(move);
                 this.challenge.moveCount++;
-                if (this.challenge.moveCount < this.challenge.maxMoves) {
+                if (this.challenge.moveCount < this.challenge.maxMoves && result.curMoveResult.gameStatus === GAME_STATUS.INPROGRESS) {
                     let analysis = await this.chessAnalysis.requestAnalysis(this.chess.getFen());
                     result.nextMoveResult = this.chess.makeMove(analysis.move);
                     
