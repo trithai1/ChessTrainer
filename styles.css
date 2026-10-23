@@ -25,6 +25,52 @@ body {
     font-family: sans-serif;
 }
 
+/* Footer */
+
+.footer {
+    background: rgba(128, 128, 128, 0.825);
+    margin: 10px;
+    padding: 3px 5px;
+    width: fit-content;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.825);
+}
+
+/* About */
+
+.container {
+    display: flex;
+    padding: 20px;
+    height: 100%;
+    width: 100%;
+}
+
+.about-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    
+    flex: 1;
+    background: rgba(128, 128, 128, 0.825);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.825);
+}
+
+.about {
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 5px solid blue;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.contacts {
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 5px solid blue;
+    border-radius: 4px;
+    padding: 10px;
+}
+
 /* Header */
 
 .nav-header {
@@ -35,6 +81,8 @@ body {
     box-sizing: border-box;
     padding: 14px 28px;
     margin: 0;
+    border: 2px solid rgb(0, 3, 65);
+    border-radius: 4px;
 }
 
 nav a {
@@ -51,10 +99,11 @@ nav a:hover {
 /* Side panel */
 
 #side-panel {
-    background-color: rgba(44, 40, 40, 0.859);
+    background-color: rgba(44, 40, 40, 0.825);
     align-self: stretch;
     width: min(20cqw, 20cqh);
     margin: min(5cqw, 5cqh) 0 min(5cqw, 5cqh) 0;
+    border-radius: 4px;
 }
 
 /* Game Area */
