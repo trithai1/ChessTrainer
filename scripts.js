@@ -309,8 +309,8 @@ async function performChallengeMove(move) {
     move = challenge.chess.parseChessMove(move);
     let result = challenge.chess.verifyMove(move) ? await challenge.submitMove(move) : null;
     
-    const classification = result.classification ?? "";
-    if (!result.correct) console.log(`Bad Move! ${classification}`);
+    const classification = result?.classification ?? "";
+    if (result && !result.correct) console.log(`Bad Move! ${classification}`);
     
     if (!result || !result.correct) {
         const piece = challenge.chess.getPiece(move.from.row, move.from.col);
