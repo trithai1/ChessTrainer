@@ -3,23 +3,80 @@
     --svg-index: 60;
     --selection-overlay-index: 150;
     --promotion-index: 200;
+    --white: #fff;
 }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
     height: 100%;
 }
 
 body {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+
     background-image: url("assets/img/swirling_mountain_valley.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
+
+    font-family: sans-serif;
+}
+
+/* Header */
+
+.nav-header {
+    background-color: rgb(217, 159, 13);
+    display: flex;
+    align-items: center;
+    position: sticky;
+    box-sizing: border-box;
+    padding: 14px 28px;
+    margin: 0;
+}
+
+nav a {
+    color: var(--white);
+    padding: 10px;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: rgb(57, 22, 1);
+}
+
+/* Side panel */
+
+#side-panel {
+    background-color: rgba(44, 40, 40, 0.859);
+    align-self: stretch;
+    width: min(20cqw, 20cqh);
+    margin: min(5cqw, 5cqh) 0 min(5cqw, 5cqh) 0;
+}
+
+/* Game Area */
+
+.game {
+    display: flex;
+    justify-content: center; /* centers horizontally */
+    align-items: center; /* centers vertically */
+
+    container-type: size;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
 }
 
 #chess-container {
+    container-type: size;
     display: flex;
     justify-content: center;
     align-items: center;
+    width: min(100cqw, 100cqh);
+    aspect-ratio: 1;
 }
 
 #chess-border {
@@ -31,8 +88,8 @@ body {
 
 #promotion-overlay {
     display: none;
-    grid-template-columns: repeat(8, min(10vh, 8vw));
-    grid-template-rows: repeat(8, min(10vh, 8vw));
+    grid-template-columns: repeat(8, min(10cqw, 10cqh));
+    grid-template-rows: repeat(8, min(10cqw, 10cqh));
     background: rgba(0, 0, 0, 0.8);
     grid-column: 1/-1;
     grid-row: 1/-1;
@@ -111,11 +168,10 @@ body {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    grid-template-columns: repeat(8, min(10vh, 8vw));
-    grid-template-rows: repeat(8, min(10vh, 8vw));
-    margin: min(10vh, 8vw);
+    grid-template-columns: repeat(8, min(10cqw, 10cqh));
+    grid-template-rows: repeat(8, min(10cqw, 10cqh));
+    margin: min(10cqw, 10cqh);
     width: fit-content;
-    border: 1px solid black;
     border-radius: 1%;
     line-height: 0; /* svg is treated as inline text, so this remove the extra spacing and tighten the div size to the svg */
 }
@@ -129,14 +185,14 @@ body {
 }
 
 .piece-move {
-    width: min(10vh, 8vw);
-    height: min(10vh, 8vw);
+    width: min(10cqw, 10cqh);
+    height: min(10cqw, 10cqh);
 }
 
 .move-circle {
     position: relative;
-    width: calc(min(10vh, 8vw)/3);
-    height: calc(min(10vh, 8vw)/3);
+    width: calc(min(10cqw, 10cqh)/3);
+    height: calc(min(10cqw, 10cqh)/3);
     background: rgb(0, 0, 0, .35);
     border-radius: 50%;
     top: 50%;
@@ -236,13 +292,4 @@ body {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-}
-
-/* Navigation panel */
-
-#nav-panel {
-    background-color: rgba(44, 40, 40, 0.859);
-    align-self: stretch;
-    width: 20%;
-    margin: 5vh 0 5vh 0;
 }
