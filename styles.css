@@ -28,7 +28,7 @@ body {
 /* Footer */
 
 .footer {
-    background: rgba(128, 128, 128, 0.825);
+    background-color: rgba(128, 128, 128, 0.825);
     margin: 10px;
     padding: 3px 5px;
     width: fit-content;
@@ -51,14 +51,14 @@ body {
     justify-content: space-between;
     
     flex: 1;
-    background: rgba(128, 128, 128, 0.825);
+    background-color: rgba(128, 128, 128, 0.825);
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.825);
 }
 
 .about {
-    background: rgba(255, 255, 255, 0.25);
+    background-color: rgba(255, 255, 255, 0.25);
     border-left: 5px solid blue;
     border-radius: 4px;
     padding: 10px;
@@ -66,7 +66,7 @@ body {
 }
 
 .contacts {
-    background: rgba(255, 255, 255, 0.25);
+    background-color: rgba(255, 255, 255, 0.25);
     border-left: 5px solid blue;
     border-radius: 4px;
     padding: 10px;
@@ -115,10 +115,68 @@ nav a:hover {
 
 #side-panel {
     background-color: rgba(44, 40, 40, 0.825);
+    display: flex;
+    flex-direction: column;
     align-self: stretch;
     width: min(20cqw, 20cqh);
     margin: min(5cqw, 5cqh) 0 min(5cqw, 5cqh) 0;
     border-radius: 4px;
+    font-size: max(1vw, 1vh);
+}
+
+.rating-container {
+    background-color: green;
+    display: flex;
+    flex-direction: column;
+}
+
+.rating-container p {
+    background-color: var(--white);
+    align-self: center;
+}
+
+.ratings {
+    background-color: blue;
+    display: flex;
+    justify-content: center;
+    padding: 5px;
+    gap: 5px;
+}
+
+.rating {
+    background-color: var(--white);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.rating-label {
+    background-color: var(--white);
+    text-align: center;
+}
+
+.rating-value {
+    background-color: var(--white);
+    text-align: center;
+}
+
+.move-classification {
+    background-color: var(--white);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: min(3vw, 3vh);
+    margin: min(2vw, 2vh) 5px 0;
+}
+
+.move-classification p {
+    background-color: var(--white);
+    text-align: center;
+}
+
+.next-challenge {
+    background-color: var(--white);
+    margin-top: auto;
 }
 
 /* Game Area */
@@ -154,7 +212,7 @@ nav a:hover {
     display: none;
     grid-template-columns: repeat(8, min(10cqw, 10cqh));
     grid-template-rows: repeat(8, min(10cqw, 10cqh));
-    background: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.8);
     grid-column: 1/-1;
     grid-row: 1/-1;
     width: 100%;
@@ -257,7 +315,7 @@ nav a:hover {
     position: relative;
     width: calc(min(10cqw, 10cqh)/3);
     height: calc(min(10cqw, 10cqh)/3);
-    background: rgb(0, 0, 0, .35);
+    background-color: rgb(0, 0, 0, .35);
     border-radius: 50%;
     top: 50%;
     left: 50%;
