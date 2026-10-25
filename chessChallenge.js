@@ -90,7 +90,7 @@ export default class ChessChallenge {
             this.chess = new Chess();
             this.challenge.position.moves.forEach(entry => this.chess.makeMove(entry.move));
 
-            const analysis = await this.chessAnalysis.requestAnalysis(this.chess.getFen());
+            const analysis = await this.chessAnalysis.requestAnalysis({input: this.chess.movesUCI});
             this.challenge.currentScore = analysis.eval;
             this.challenge.bestMove = analysis.move;
             this.challenge.mate = analysis.mate ? Number(analysis.mate) : null;
@@ -240,10 +240,10 @@ export default class ChessChallenge {
                 result.curMoveResult = this.chess.makeMove(move);
                 this.challenge.moveCount++;
                 if (this.challenge.moveCount < this.challenge.maxMoves && result.curMoveResult.gameStatus === GAME_STATUS.INPROGRESS) {
-                    let analysis = await this.chessAnalysis.requestAnalysis(this.chess.getFen());
+                    let analysis = await this.chessAnalysis.requestAnalysis({input: this.chess.movesUCI});
                     result.nextMoveResult = this.chess.makeMove(analysis.move);
                     
-                    analysis = await this.chessAnalysis.requestAnalysis(this.chess.getFen());
+                    analysis = await this.chessAnalysis.requestAnalysis({input: this.chess.movesUCI});
                     this.challenge.currentScore = analysis.eval;
                     this.challenge.bestMove = analysis.move;
                     this.challenge.mate = analysis.mate ? Number(analysis.mate) : null;
