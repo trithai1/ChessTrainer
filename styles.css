@@ -145,18 +145,18 @@ nav a:hover {
     display: flex;
     flex-direction: column;
     background-color: rgba(60, 58, 58, 0.85);
-    border: 1px solid rgb(247, 211, 111);;
+    border: 1px solid rgb(247, 211, 111);
     border-radius: 4px;
     width: 100%;
 }
 
-.rating-label {
+.ratings .label {
     font-size: min(2cqw, 2cqh);
     text-align: center;
     color: rgb(247, 211, 111);
 }
 
-.rating-value {
+.ratings .value {
     font-size: min(2cqw, 2cqh);
     text-align: center;
     color: white;

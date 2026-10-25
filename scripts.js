@@ -19,6 +19,35 @@ const nPromotion = document.getElementById("promotion-n");
 const rPromotion = document.getElementById("promotion-r");
 const bPromotion = document.getElementById("promotion-b");
 
+const COLORS = {
+    page: {
+        yellow: "rgb(247, 211, 111)",
+    },
+
+    correct: "rgb(69, 190, 65)",
+    incorrect: "rgb(247, 111, 111)",
+    
+    best: "rgb(69, 190, 65)",
+    excellent: "rgb(111, 199, 247)",
+    good: "rgb(247, 211, 111)",
+    inaccuracy: "rgb(191, 163, 163)",
+    mistake: "rgb(247, 168, 111)",
+    blunder: "rgb(247, 111, 113)",
+};
+
+const puzzleRatingEl = document.querySelector(".puzzle.rating");
+const puzzleRatingLabelEl = puzzleRatingEl.querySelector(".label");
+const puzzleRatingValueEl = puzzleRatingEl.querySelector(".value");
+
+const positionRatingEl = document.querySelector(".position.rating");
+const positionRatingLabelEl = positionRatingEl.querySelector(".label");
+const positionRatingValueEl = positionRatingEl.querySelector(".value");
+
+const moveClassificationEl = document.querySelector(".move-classification");
+const moveClassificationPEl = document.querySelector(".move-classification > p");
+
+const nextChallengeEl = document.getElementsByClassName("next-challenge")[0];
+
 const challenge = new ChessChallenge();
 await challenge.load();
 
@@ -309,21 +338,15 @@ async function performChallengeMove(move) {
     move = challenge.chess.parseChessMove(move);
     let result = challenge.chess.verifyMove(move) ? await challenge.submitMove(move) : null;
     
-    const classification = result?.classification ?? "";
-    if (result && !result.correct) console.log(`Bad Move! ${classification}`);
-    
     if (!result || !result.correct) {
         const piece = challenge.chess.getPiece(move.from.row, move.from.col);
         revertPiece(piece, move.from.row, move.from.col);
-        return false;
+        return result;
     }
     
     applyMoveResult(result.curMoveResult);
-    if (result.solved) console.log(`You Solved it! ${classification} - puzzle(${challenge.puzzleRating}) - position(${challenge.positionRating})`);
-    else {
-        console.log(`Good Move! ${classification}`);
-        applyMoveResult(result.nextMoveResult);
-    }
+    if (!result.solved) applyMoveResult(result.nextMoveResult);
+    return result;
 }
 
 function playSound(moveResult) {
@@ -363,9 +386,36 @@ window.addEventListener("mouseup", async (event) => {
         draggingPiece = null;
         return;
     }
-    await performChallengeMove(move);
+    const result = await performChallengeMove(move);
     draggingPiece = null;
+
+    if (!result) return;
+    
+    const classification = result?.classification ?? "";
+    if (!result.correct) console.log(`Bad Move! ${classification}`);
+    
+    if (result.solved) console.log(`You Solved it! ${classification} - puzzle(${challenge.puzzleRating}) - position(${challenge.positionRating})`);
+    else console.log(`Good Move! ${classification}`);
 });
+
+// Sandbox
+
+puzzleRatingEl.style.border = `1px solid ${COLORS.correct}`;
+puzzleRatingLabelEl.style.color = COLORS.correct;
+puzzleRatingValueEl.textContent = 3000;
+
+positionRatingEl.style.border = `1px solid ${COLORS.correct}`;
+positionRatingLabelEl.style.color = COLORS.correct;
+positionRatingValueEl.textContent = 3000;
+
+moveClassificationEl.style.border = `2px solid ${COLORS.blunder}`;
+moveClassificationPEl.style.color = COLORS.blunder;
+moveClassificationPEl.textContent = "Blunder!";
+
+nextChallengeEl.disabled = false;
+nextChallengeEl.textContent = "▶ Solved!";
+
+// ------------------------------
 
 document.addEventListener("mousedown", event => {
     event.preventDefault(); // Prevent text selection
@@ -410,8 +460,6 @@ window.addEventListener("mouseup", event => {
     drawing = false;
     svg_utils.finalizeDraggingSVG();
 });
-
-const nextChallengeEl = document.getElementById("next-challenge");
 
 function removeChessPieces() {
     chessGrid.querySelectorAll(".piece").forEach(element => element.remove());
