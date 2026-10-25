@@ -22,6 +22,7 @@ const bPromotion = document.getElementById("promotion-b");
 const COLORS = {
     page: {
         yellow: "rgb(247, 211, 111)",
+        white: "white",
     },
 
     correct: "rgb(69, 190, 65)",
@@ -34,6 +35,16 @@ const COLORS = {
     mistake: "rgb(247, 168, 111)",
     blunder: "rgb(247, 111, 113)",
 };
+
+const CLASSIFICATION = {
+    default: "...",
+    best: "Best!",
+    excellent: "Excellent!",
+    good: "Good!",
+    inaccuracy: "Inaccuracy!",
+    mistake: "Mistake!",
+    blunder: "Blunder!",
+}
 
 const puzzleRatingEl = document.querySelector(".puzzle.rating");
 const puzzleRatingLabelEl = puzzleRatingEl.querySelector(".label");
@@ -73,25 +84,29 @@ async function openPromotionOverlay(move) {
     qPromotion.onclick = async () => {
         promotionOverlay.style.display = "none";
         move.promotion = CHESS_PIECE.QUEEN;
-        await performChallengeMove(move);
+        const result = await performChallengeMove(move);
+        updateSidePanel(result);
     };
 
     nPromotion.onclick = async () => {
         promotionOverlay.style.display = "none";
         move.promotion = CHESS_PIECE.KNIGHT;
-        await performChallengeMove(move);
+        const result = await performChallengeMove(move);
+        updateSidePanel(result);
     };
 
     rPromotion.onclick = async () => {
         promotionOverlay.style.display = "none";
         move.promotion = CHESS_PIECE.ROOK;
-        await performChallengeMove(move);
+        const result = await performChallengeMove(move);
+        updateSidePanel(result);
     };
 
     bPromotion.onclick = async () => {
         promotionOverlay.style.display = "none";
         move.promotion = CHESS_PIECE.BISHOP;
-        await performChallengeMove(move);
+        const result = await performChallengeMove(move);
+        updateSidePanel(result);
     }
 }
 
@@ -363,6 +378,45 @@ function playSound(moveResult) {
     }
 }
 
+function updateSidePanel(result) {
+    if (result.pass === false && challenge.challenge.type === ChessChallenge.PUZZLE) {
+        puzzleRatingEl.style.border = `1px solid ${COLORS.incorrect}`;
+        puzzleRatingLabelEl.style.color = COLORS.incorrect;
+        puzzleRatingValueEl.textContent = challenge.puzzleRating;
+
+    } else if (result.pass === false && challenge.challenge.type === ChessChallenge.POSITION) {
+        positionRatingEl.style.border = `1px solid ${COLORS.incorrect}`;
+        positionRatingLabelEl.style.color = COLORS.incorrect;
+        positionRatingValueEl.textContent = challenge.positionRating;
+    }
+    
+    if (challenge.challenge.type === ChessChallenge.POSITION && result.correct) {
+        const classification = CLASSIFICATION[result?.classification ?? "default"];
+        const color = Object.hasOwn(result, "classification") ? COLORS[result.classification] : COLORS.page.yellow;
+        
+        moveClassificationEl.style.border = `2px solid ${color}`;
+        moveClassificationPEl.style.color = color;
+        moveClassificationPEl.textContent = classification;
+    }
+
+    if (result.solved && challenge.challenge.type === ChessChallenge.PUZZLE) {
+        puzzleRatingEl.style.border = `1px solid ${COLORS.correct}`;
+        puzzleRatingLabelEl.style.color = COLORS.correct;
+        puzzleRatingValueEl.textContent = challenge.puzzleRating;
+    }
+    else if (result.solved && challenge.challenge.type === ChessChallenge.POSITION) {
+        positionRatingEl.style.border = `1px solid ${COLORS.correct}`;
+        positionRatingLabelEl.style.color = COLORS.correct;
+        positionRatingValueEl.textContent = challenge.positionRating;
+    }
+    
+    if (result.solved) {
+        console.log(result);
+        nextChallengeEl.disabled = false;
+        nextChallengeEl.textContent = "▶ Solved!";
+    }
+}
+
 window.addEventListener("mouseup", async (event) => {
     if (!draggingPiece) return;
 
@@ -390,32 +444,8 @@ window.addEventListener("mouseup", async (event) => {
     draggingPiece = null;
 
     if (!result) return;
-    
-    const classification = result?.classification ?? "";
-    if (!result.correct) console.log(`Bad Move! ${classification}`);
-    
-    if (result.solved) console.log(`You Solved it! ${classification} - puzzle(${challenge.puzzleRating}) - position(${challenge.positionRating})`);
-    else console.log(`Good Move! ${classification}`);
+    updateSidePanel(result);
 });
-
-// Sandbox
-
-puzzleRatingEl.style.border = `1px solid ${COLORS.correct}`;
-puzzleRatingLabelEl.style.color = COLORS.correct;
-puzzleRatingValueEl.textContent = 3000;
-
-positionRatingEl.style.border = `1px solid ${COLORS.correct}`;
-positionRatingLabelEl.style.color = COLORS.correct;
-positionRatingValueEl.textContent = 3000;
-
-moveClassificationEl.style.border = `2px solid ${COLORS.blunder}`;
-moveClassificationPEl.style.color = COLORS.blunder;
-moveClassificationPEl.textContent = "Blunder!";
-
-nextChallengeEl.disabled = false;
-nextChallengeEl.textContent = "▶ Solved!";
-
-// ------------------------------
 
 document.addEventListener("mousedown", event => {
     event.preventDefault(); // Prevent text selection
@@ -466,6 +496,8 @@ function removeChessPieces() {
 }
 
 async function setupChallenge() {
+    if (challenge.challenge !== undefined && challenge.solved !== true) return;
+    
     await challenge.nextChallenge();
     removeChessPieces();
     removeHelpers();
@@ -484,7 +516,22 @@ async function setupChallenge() {
 
     fenToChessboard(chess.getFen());
     performPieceMove(chess, firstMove);
+
+    puzzleRatingEl.style.border = `1px solid ${COLORS.page.yellow}`;
+    puzzleRatingLabelEl.style.color = COLORS.page.yellow;
+    puzzleRatingValueEl.textContent = challenge.puzzleRating;
+
+    positionRatingEl.style.border = `1px solid ${COLORS.page.yellow}`;
+    positionRatingLabelEl.style.color = COLORS.page.yellow;
+    positionRatingValueEl.textContent = challenge.positionRating;
+
+    moveClassificationEl.style.border = `2px solid ${COLORS.page.yellow}`;
+    moveClassificationPEl.style.color = COLORS.page.white;
+    moveClassificationPEl.textContent = CLASSIFICATION.default;
+
+    nextChallengeEl.disabled = true;
+    nextChallengeEl.textContent = "Inprogress...";
 }
 setupChallenge();
 
-nextChallengeEl.addEventListener("click", setupChallenge);
+nextChallengeEl.addEventListener("mouseup", setupChallenge);

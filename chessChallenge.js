@@ -18,6 +18,7 @@ export default class ChessChallenge {
         this.puzzleRating = 1000;
         this.positionRating = 1000;
         this.challenge;
+        this.solved = null;
         this.pass = null;
     }
 
@@ -93,7 +94,7 @@ export default class ChessChallenge {
             this.challenge.bestMove = analysis.move;
             this.challenge.mate = analysis.mate ? Number(analysis.mate) : null;
         }
-        this.pass = null;
+        this.solved = this.pass = null;
     }
 
     getEvalRange(score, mate) {
@@ -165,9 +166,9 @@ export default class ChessChallenge {
         };
     }
 
-    getRatingChange(playerRating, challengeRating, solved, normalizeDiff=null, k=32) {
+    getRatingChange(playerRating, challengeRating, pass, normalizeDiff=null, k=32) {
         const expected = 1 / (1 + 10 ** ((challengeRating - playerRating) / 400));
-        let ratingChange = Math.round(k * ((solved ? 1 : 0) - expected));
+        let ratingChange = Math.round(k * ((pass ? 1 : 0) - expected));
 
         if (normalizeDiff) {
             const diff = Math.max(0, normalizeDiff);
@@ -178,12 +179,14 @@ export default class ChessChallenge {
     }
 
     async submitMove(move) {
-        if (this.pass) return null;
+        if (this.solved) return null;
         let result = {
             correct: false,
             solved: null,
+            pass: this.pass,
             curMoveResult: null,
             nextMoveResult: null,
+            ratingChange: null,
         };
         
         // Puzzle Challenge
@@ -198,17 +201,19 @@ export default class ChessChallenge {
                     result.nextMoveResult = this.chess.makeMove(nextMove);
                     this.challenge.moveIndex++;
                 } else {
-                    result.solved = true;
+                    result.solved = this.solved = true;
                     if (this.pass === null) {
-                        this.pass = true;
-                        this.puzzleRating += this.getRatingChange(this.puzzleRating, this.challenge.rating, this.pass);
+                        result.pass = this.pass = true;
+                        result.ratingChange = this.getRatingChange(this.puzzleRating, this.challenge.rating, this.pass);
+                        this.puzzleRating = Math.min(3400, this.puzzleRating + result.ratingChange);
                     }
                 }
             } else {
-                result.solved = false;
+                result.solved = this.solved = false;
                 if (this.pass === null) {
-                    this.pass = false;
-                    this.puzzleRating += this.getRatingChange(this.puzzleRating, this.challenge.rating, this.pass);
+                    result.pass = this.pass = false;
+                    result.ratingChange = this.getRatingChange(this.puzzleRating, this.challenge.rating, this.pass);
+                    this.puzzleRating = Math.max(0, this.puzzleRating + result.ratingChange);
                 }
             }
         
@@ -240,19 +245,20 @@ export default class ChessChallenge {
                     this.challenge.bestMove = analysis.move;
                     this.challenge.mate = analysis.mate ? Number(analysis.mate) : null;
                 } else {
-                    result.solved = true;
+                    result.solved = this.solved = true;
                     if (this.pass === null) {
-                        this.pass = true;
+                        result.pass = this.pass = true;
                         const sum = this.challenge.ratingChanges.reduce((acc, value) => acc + value, 0);
-                        this.positionRating = Math.min(3600, this.positionRating + Math.round(sum / this.challenge.ratingChanges.length));
+                        result.ratingChange = Math.round(sum / this.challenge.ratingChanges.length);
+                        this.positionRating = Math.min(3600, this.positionRating + result.ratingChange);
                     }
                 }
             } else {
-                result.solved = false;
+                result.solved = this.solved = false;
                 if (this.pass === null) {
-                    this.pass = false;
-                    const ratingChange = this.getRatingChange(this.positionRating, this.challenge.rating, false);
-                    this.positionRating = Math.max(0, this.positionRating + ratingChange);
+                    result.pass = this.pass = false;
+                    result.ratingChange = this.getRatingChange(this.positionRating, this.challenge.rating, this.pass);
+                    this.positionRating = Math.max(0, this.positionRating + result.ratingChange);
                 }
             }
         }
