@@ -379,6 +379,7 @@ function playSound(moveResult) {
 }
 
 function updateSidePanel(result) {
+    console.log(result);
     if (result.pass === false && challenge.challenge.type === ChessChallenge.PUZZLE) {
         puzzleRatingEl.style.border = `1px solid ${COLORS.incorrect}`;
         puzzleRatingLabelEl.style.color = COLORS.incorrect;
@@ -390,7 +391,7 @@ function updateSidePanel(result) {
         positionRatingValueEl.textContent = challenge.positionRating;
     }
     
-    if (challenge.challenge.type === ChessChallenge.POSITION && result.correct) {
+    if (challenge.challenge.type === ChessChallenge.POSITION) {
         const classification = CLASSIFICATION[result?.classification ?? "default"];
         const color = Object.hasOwn(result, "classification") ? COLORS[result.classification] : COLORS.page.yellow;
         
@@ -399,12 +400,12 @@ function updateSidePanel(result) {
         moveClassificationPEl.textContent = classification;
     }
 
-    if (result.solved && challenge.challenge.type === ChessChallenge.PUZZLE) {
+    if (result.pass && challenge.challenge.type === ChessChallenge.PUZZLE) {
         puzzleRatingEl.style.border = `1px solid ${COLORS.correct}`;
         puzzleRatingLabelEl.style.color = COLORS.correct;
         puzzleRatingValueEl.textContent = challenge.puzzleRating;
     }
-    else if (result.solved && challenge.challenge.type === ChessChallenge.POSITION) {
+    else if (result.pass && challenge.challenge.type === ChessChallenge.POSITION) {
         positionRatingEl.style.border = `1px solid ${COLORS.correct}`;
         positionRatingLabelEl.style.color = COLORS.correct;
         positionRatingValueEl.textContent = challenge.positionRating;

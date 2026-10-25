@@ -62,7 +62,7 @@ export default class ChessChallenge {
         const [newPool, value] = ChessChallenge.randomPoolNumber(this.pool, 6);
         this.pool = newPool;
 
-        const isPuzzle = true; // value % 2 === 0;
+        const isPuzzle = false; // value % 2 === 0;
         if (isPuzzle) {
             this.challenge = {
                 type: ChessChallenge.PUZZLE,
@@ -78,7 +78,8 @@ export default class ChessChallenge {
                 type: ChessChallenge.POSITION,
                 position: this.chessPosition.getRandomPosition(this.positionRating),
                 rating: undefined,
-                maxMoves: this.getRandomNumber5(),
+                // maxMoves: this.getRandomNumber5(),
+                maxMoves: 2,
                 moveCount: 0,
                 currentScore: undefined,
                 bestMove: undefined,
@@ -219,7 +220,7 @@ export default class ChessChallenge {
         
         // Position Challenge
         } else if (this.challenge.type === ChessChallenge.POSITION) {
-            const isBest = this.sameMove(move, this.challenge.bestMove);
+            const isBest = this.chess.sameMove(move, this.challenge.bestMove);
             const analysis = isBest ?
                 { eval: this.challenge.currentScore, mate: this.challenge.mate, move: this.challenge.bestMove } :
                 await this.chessPosition.evaluateMove(this.chessAnalysis, this.chess.getFen(), move);
@@ -227,7 +228,7 @@ export default class ChessChallenge {
             const moveMate = analysis.mate ? Number(analysis.mate) : null;
             const compare = this.compareEvals(this.challenge.currentScore, this.challenge.mate, moveScore, moveMate);
 
-            result.correct = compare.categoryDiff < 2;
+            result.correct = Math.abs(compare.categoryDiff) < 2;
             result.classification = compare.classification;
 
             if (result.correct) {
