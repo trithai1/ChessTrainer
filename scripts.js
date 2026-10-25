@@ -292,7 +292,6 @@ function revertPiece(piece, row, col) {
 function applyMoveResult(moveResult) {
     const piece = getChessPiece(moveResult.piece, moveResult.from.row, moveResult.from.col);
     if (!moveResult.success) {
-        // selectedPiece = move.to.row === move.from.row && move.to.col === move.from.col ? piece : null;
         revertPiece(moveResult.piece, moveResult.from.row, moveResult.from.col, piece);
         return false;
     }
