@@ -71,7 +71,7 @@ async function openPromotionOverlay(move) {
     const options = [qPromotion, nPromotion, rPromotion, bPromotion];
     const increment = move.to.row <= 4 ? 1 : -1;
     let row = move.to.row;
-    const [color, img] = chess.activeColor == PIECE_COLOR.WHITE ? ["w", "white_piece_frame.png"] : ["b", "black_piece_frame.png"];
+    const [color, img] = challenge.chess.activeColor == PIECE_COLOR.WHITE ? ["w", "white_piece_frame.png"] : ["b", "black_piece_frame.png"];
     for (const option of options) {
         option.style.backgroundImage = `url(assets/img/${img})`;
         const promotionPiece = option.querySelector(".promotion-piece");
@@ -350,6 +350,7 @@ function performPieceMove(chess, move) {
 }
 
 async function performChallengeMove(move) {
+    console.log(challenge.chess.getFen());
     move = challenge.chess.parseChessMove(move);
     let result = challenge.chess.verifyMove(move) ? await challenge.submitMove(move) : null;
     
@@ -360,7 +361,9 @@ async function performChallengeMove(move) {
     }
     
     applyMoveResult(result.curMoveResult);
+    console.log(challenge.chess.getFen());
     if (!result.solved) applyMoveResult(result.nextMoveResult);
+    console.log(challenge.chess.getFen());
     return result;
 }
 
@@ -379,7 +382,6 @@ function playSound(moveResult) {
 }
 
 function updateSidePanel(result) {
-    console.log(result);
     if (result.pass === false && challenge.challenge.type === ChessChallenge.PUZZLE) {
         puzzleRatingEl.style.border = `1px solid ${COLORS.incorrect}`;
         puzzleRatingLabelEl.style.color = COLORS.incorrect;

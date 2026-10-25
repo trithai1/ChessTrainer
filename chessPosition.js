@@ -161,6 +161,39 @@ export default class ChessPosition {
         // const moveIndex = this.getRandomMoveIndex(position);
         const moveIndex = 11;
         position.moves = position.moves.slice(0, moveIndex);
+        console.log(position);
+
+        position.moves = [
+            {
+                "turn": 1,
+                "color": "white",
+                "move": "e4",
+                "time": 300,
+                "eval": 0.18
+            },
+            {
+                "turn": 1,
+                "color": "black",
+                "move": "a6",
+                "time": 300,
+                "eval": 0.30
+            },
+            {
+                "turn": 2,
+                "color": "white",
+                "move": "e5",
+                "time": 301,
+                "eval": 0.25
+            },
+            {
+                "turn": 2,
+                "color": "black",
+                "move": "d5",
+                "time": 298,
+                "eval": 0.35
+            }
+        ];
+
         return position;
     }
 

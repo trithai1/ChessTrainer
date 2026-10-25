@@ -150,20 +150,21 @@ export default class ChessChallenge {
         return Math.max(0, before - after);
     }
 
-    getMoveClassification(pointLoss) {
+    getMoveClassification(pointLoss, categoryDiff) {
         if (pointLoss <= 0) return "best";
-        if (pointLoss <= 0.02) return "excellent";
-        if (pointLoss <= 0.05) return "good";
-        if (pointLoss <= 0.10) return "inaccuracy";
-        if (pointLoss <= 0.20) return "mistake";
+        if (pointLoss <= 0.04) return "excellent";
+        if (pointLoss <= 0.13) return "good";
+        if (pointLoss <= 0.18 || categoryDiff === 0) return "inaccuracy";
+        if (pointLoss <= 0.28) return "mistake";
         return "blunder";
     }
 
     compareEvals(prevScore, prevMate, curScore, curMate) {
+        const categoryDiff = this.getEvalRange(curScore, curMate) - this.getEvalRange(prevScore, prevMate)
         return {
-            categoryDiff: this.getEvalRange(curScore, curMate) - this.getEvalRange(prevScore, prevMate),
+            categoryDiff: categoryDiff,
             normalizeDiff: this.normalizeEval(curScore, curMate) - this.normalizeEval(prevScore, prevMate),
-            classification: this.getMoveClassification(this.expectedPointLoss(prevScore, curScore)),
+            classification: this.getMoveClassification(this.expectedPointLoss(prevScore, curScore), categoryDiff),
         };
     }
 
@@ -226,8 +227,9 @@ export default class ChessChallenge {
                 await this.chessPosition.evaluateMove(this.chessAnalysis, this.chess.getFen(), move);
             const moveScore = analysis.eval;
             const moveMate = analysis.mate ? Number(analysis.mate) : null;
+            console.log(this.challenge.currentScore, this.challenge.mate, moveScore, moveMate);
             const compare = this.compareEvals(this.challenge.currentScore, this.challenge.mate, moveScore, moveMate);
-
+            console.log(compare);
             result.correct = Math.abs(compare.categoryDiff) < 2;
             result.classification = compare.classification;
 

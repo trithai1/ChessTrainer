@@ -7,8 +7,9 @@ export default class ChessAnalysis {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({fen}),
+            // body: JSON.stringify({fen}),
+            body: JSON.stringify({input: "1. e4 a6 2. e5 d5"}),
         });
-        return response.json({fen});
+        return response.json();
     }
 }
