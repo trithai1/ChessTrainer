@@ -41,7 +41,6 @@ body {
 .container {
     display: flex;
     padding: 20px;
-    min-height: 90%;
     height: auto;
     width: 100%;
 }
@@ -74,13 +73,12 @@ body {
 .cat-img {
     align-self: center;
     flex-grow: 1;
-    height: 200px;
+    height: min(35vw, 35vh);
     margin: 10px;
 }
 
 .cat-img img {
     object-fit: cover;
-    width: 100%;
     height: 100%;
 }
 
