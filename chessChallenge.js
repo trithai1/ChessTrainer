@@ -227,9 +227,7 @@ export default class ChessChallenge {
                 await this.chessPosition.evaluateMove(this.chessAnalysis, this.chess.getFen(), move);
             const moveScore = analysis.eval;
             const moveMate = analysis.mate ? Number(analysis.mate) : null;
-            console.log(this.challenge.currentScore, this.challenge.mate, moveScore, moveMate);
             const compare = this.compareEvals(this.challenge.currentScore, this.challenge.mate, moveScore, moveMate);
-            console.log(compare);
             result.correct = Math.abs(compare.categoryDiff) < 2;
             result.classification = compare.classification;
 

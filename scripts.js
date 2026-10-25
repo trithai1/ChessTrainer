@@ -350,7 +350,6 @@ function performPieceMove(chess, move) {
 }
 
 async function performChallengeMove(move) {
-    console.log(challenge.chess.getFen());
     move = challenge.chess.parseChessMove(move);
     let result = challenge.chess.verifyMove(move) ? await challenge.submitMove(move) : null;
     
@@ -361,9 +360,7 @@ async function performChallengeMove(move) {
     }
     
     applyMoveResult(result.curMoveResult);
-    console.log(challenge.chess.getFen());
     if (!result.solved) applyMoveResult(result.nextMoveResult);
-    console.log(challenge.chess.getFen());
     return result;
 }
 
@@ -414,7 +411,6 @@ function updateSidePanel(result) {
     }
     
     if (result.solved) {
-        console.log(result);
         nextChallengeEl.disabled = false;
         nextChallengeEl.textContent = "▶ Solved!";
     }
