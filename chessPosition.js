@@ -161,8 +161,6 @@ export default class ChessPosition {
         // const moveIndex = this.getRandomMoveIndex(position);
         const moveIndex = 11;
         position.moves = position.moves.slice(0, moveIndex);
-        console.log(position);
-
         position.moves = [
             {
                 "turn": 1,
@@ -197,9 +195,8 @@ export default class ChessPosition {
         return position;
     }
 
-    async evaluateMove(chessAnalysis, fen, move) {
-        const chess = new Chess(fen);
-        chess.makeMove(move);
-        return chessAnalysis.requestAnalysis(chess.getFen());
+    async evaluateMove(chessAnalysis, chess, move) {
+        const input = [...chess.movesSAN, chess.parseToSANNotation(move)];
+        return chessAnalysis.requestAnalysis({input});
     }
 }

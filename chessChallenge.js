@@ -90,7 +90,7 @@ export default class ChessChallenge {
             this.chess = new Chess();
             this.challenge.position.moves.forEach(entry => this.chess.makeMove(entry.move));
 
-            const analysis = await this.chessAnalysis.requestAnalysis({input: this.chess.movesUCI});
+            const analysis = await this.chessAnalysis.requestAnalysis({input: this.chess.movesSAN});
             this.challenge.currentScore = analysis.eval;
             this.challenge.bestMove = analysis.move;
             this.challenge.mate = analysis.mate ? Number(analysis.mate) : null;
@@ -224,7 +224,7 @@ export default class ChessChallenge {
             const isBest = this.chess.sameMove(move, this.challenge.bestMove);
             const analysis = isBest ?
                 { eval: this.challenge.currentScore, mate: this.challenge.mate, move: this.challenge.bestMove } :
-                await this.chessPosition.evaluateMove(this.chessAnalysis, this.chess.getFen(), move);
+                await this.chessPosition.evaluateMove(this.chessAnalysis, this.chess, move);
             const moveScore = analysis.eval;
             const moveMate = analysis.mate ? Number(analysis.mate) : null;
             const compare = this.compareEvals(this.challenge.currentScore, this.challenge.mate, moveScore, moveMate);
@@ -238,10 +238,10 @@ export default class ChessChallenge {
                 result.curMoveResult = this.chess.makeMove(move);
                 this.challenge.moveCount++;
                 if (this.challenge.moveCount < this.challenge.maxMoves && result.curMoveResult.gameStatus === GAME_STATUS.INPROGRESS) {
-                    let analysis = await this.chessAnalysis.requestAnalysis({input: this.chess.movesUCI});
+                    let analysis = await this.chessAnalysis.requestAnalysis({input: this.chess.movesSAN});
                     result.nextMoveResult = this.chess.makeMove(analysis.move);
                     
-                    analysis = await this.chessAnalysis.requestAnalysis({input: this.chess.movesUCI});
+                    analysis = await this.chessAnalysis.requestAnalysis({input: this.chess.movesSAN});
                     this.challenge.currentScore = analysis.eval;
                     this.challenge.bestMove = analysis.move;
                     this.challenge.mate = analysis.mate ? Number(analysis.mate) : null;

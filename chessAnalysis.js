@@ -10,6 +10,8 @@ export default class ChessAnalysis {
             },
             body: JSON.stringify({fen, input}),
         });
-        return response.json();
+        const foo = await response.json();
+        console.log(input, foo);
+        return foo;
     }
 }
