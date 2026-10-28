@@ -11,7 +11,6 @@ export default class ChessChallenge {
 
     constructor() {
         this.chess;
-        this.pool = [];
         this.chessPuzzle = new ChessPuzzle();
         this.chessPosition = new ChessPosition();
         this.chessAnalysis = new ChessAnalysis();
@@ -25,16 +24,6 @@ export default class ChessChallenge {
     async load() {
         await this.chessPuzzle.load();
         await this.chessPosition.load();
-    }
-
-    static randomPoolNumber(pool, n) {
-        if (pool.length === 0) {
-            pool = Array.from({length: n}, (_, i) => i);
-        }
-
-        const randIdx = Math.floor(Math.random() * pool.length);
-        const value = pool.splice(randIdx, 1)[0];
-        return [pool, value];
     }
 
     getRandomNumber5(minElo = 0, maxElo = 3000) {
@@ -59,9 +48,6 @@ export default class ChessChallenge {
     }
 
     async nextChallenge() {
-        const [newPool, value] = ChessChallenge.randomPoolNumber(this.pool, 6);
-        this.pool = newPool;
-
         const isPuzzle = value % 2 === 0;
         if (isPuzzle) {
             this.challenge = {
