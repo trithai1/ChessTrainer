@@ -56,6 +56,10 @@ export default class ChessPuzzle {
         return left;
     }
 
+    getPuzzle(index) {
+        return this.puzzles[index];
+    }
+
     getRandomPuzzle(rating, range=100) {
         const minIndex = this.lowerBound(rating - range);
         const maxIndex = this.lowerBound(rating + range + 1);
@@ -63,7 +67,7 @@ export default class ChessPuzzle {
         if (minIndex === maxIndex) return null;
 
         const index = minIndex + Math.floor(Math.random() * (maxIndex - minIndex));
-        return this.puzzles[index];
+        return {puzzle: this.puzzles[index], index};
     }
 
     evaluateMove(puzzle, moveIndex, moveUCI) {

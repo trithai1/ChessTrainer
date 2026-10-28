@@ -11,6 +11,7 @@ export default class ChessChallenge {
 
     constructor() {
         this.chess;
+        this.pool = [];
         this.chessPuzzle = new ChessPuzzle();
         this.chessPosition = new ChessPosition();
         this.chessAnalysis = new ChessAnalysis();
@@ -24,6 +25,16 @@ export default class ChessChallenge {
     async load() {
         await this.chessPuzzle.load();
         await this.chessPosition.load();
+    }
+
+    static randomPoolNumber(pool, n) {
+        if (pool.length === 0) {
+            pool = Array.from({length: n}, (_, i) => i);
+        }
+
+        const randIdx = Math.floor(Math.random() * pool.length);
+        const value = pool.splice(randIdx, 1)[0];
+        return [pool, value];
     }
 
     getRandomNumber5(minElo = 0, maxElo = 3000) {
@@ -47,12 +58,33 @@ export default class ChessChallenge {
         return 1;
     }
 
-    async nextChallenge() {
-        const isPuzzle = value % 2 === 0;
+    async nextChallenge(challengeSession=null) {
+        this.solved = null;
+        this.pass = challengeSession ? challengeSession.pass : null;
+        
+        let isPuzzle;
+        if (challengeSession) {
+            isPuzzle = challengeSession.type === ChessChallenge.PUZZLE;
+        } else {
+            const [newPool, value] = ChessChallenge.randomPoolNumber(this.pool, 6);
+            this.pool = newPool;
+            isPuzzle = value % 2 === 0;
+        }
+        
         if (isPuzzle) {
+            const {puzzle, index} = challengeSession ? 
+                {puzzle: this.chessPuzzle.getPuzzle(challengeSession.index), index: challengeSession.index} :
+                this.chessPuzzle.getRandomPuzzle(this.puzzleRating);
+            
+            challengeSession = {
+                type: ChessChallenge.PUZZLE,
+                index: index,
+                pass: this.pass,
+            };
+
             this.challenge = {
                 type: ChessChallenge.PUZZLE,
-                puzzle: this.chessPuzzle.getRandomPuzzle(this.puzzleRating),
+                puzzle,
                 rating: undefined,
                 moveIndex: 1,
             };
@@ -60,9 +92,20 @@ export default class ChessChallenge {
             this.chess = new Chess(this.challenge.puzzle.fen);
             this.chess.makeMove(this.challenge.puzzle.moves[0]);
         } else {
+            const {position, index, moveIndex} = challengeSession ?
+                {position: this.chessPosition.getPosition(challengeSession.index, challengeSession.moveIndex), index: challengeSession.index, moveIndex: challengeSession.moveIndex} :
+                this.chessPosition.getRandomPosition(this.positionRating);
+            
+            challengeSession = {
+                type: ChessChallenge.POSITION,
+                index: index,
+                moveIndex: moveIndex,
+                pass: this.pass,
+            };
+
             this.challenge = {
                 type: ChessChallenge.POSITION,
-                position: this.chessPosition.getRandomPosition(this.positionRating),
+                position,
                 rating: undefined,
                 maxMoves: this.getRandomNumber5(),
                 moveCount: 0,
@@ -80,7 +123,7 @@ export default class ChessChallenge {
             this.challenge.bestMove = analysis.move;
             this.challenge.mate = analysis.mate ? Number(analysis.mate) : null;
         }
-        this.solved = this.pass = null;
+        return challengeSession;
     }
 
     getEvalRange(score, mate) {

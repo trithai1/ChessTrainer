@@ -507,7 +507,9 @@ function removeChessPieces() {
 async function setupChallenge() {
     if (challenge.challenge !== undefined && challenge.solved !== true) return;
     
-    await challenge.nextChallenge();
+    let challengeSession = challenge.challenge ? null : JSON.parse(localStorage.getItem("challengeSession"));
+    challengeSession = await challenge.nextChallenge();
+    localStorage.setItem("challengeSession", JSON.stringify(challengeSession));
     removeChessPieces();
     removeHelpers();
     svg_utils.removeAllSVG();

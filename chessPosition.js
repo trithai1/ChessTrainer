@@ -149,6 +149,12 @@ export default class ChessPosition {
         return min + Math.floor(Math.random() * (max - min + 1));
     }
 
+    getPosition(index, moveIndex) {
+        const position = structuredClone(this.games[index]);
+        position.moves = position.moves.slice(0, moveIndex);
+        return position;
+    }
+
     getRandomPosition(rating, range=100) {
         const minIndex = this.lowerBound(rating - range);
         const maxIndex = this.lowerBound(rating + range + 1);
@@ -159,7 +165,7 @@ export default class ChessPosition {
         const position = structuredClone(this.games[index]);
         const moveIndex = this.getRandomMoveIndex(position);
         position.moves = position.moves.slice(0, moveIndex);
-        return position;
+        return {position, index, moveIndex};
     }
 
     async evaluateMove(chessAnalysis, chess, move) {
