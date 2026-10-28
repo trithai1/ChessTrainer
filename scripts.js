@@ -7,11 +7,17 @@ import Chess from "../Logicore/chess.js";
 
 const clamp = (min, num, max) => Math.min(Math.max(num, min), max);
 
-const moveSound = new Audio("./assets/move.mp3");
-const captureSound = new Audio("./assets/capture.mp3");
-const castleSound = new Audio("./assets/castle.mp3");
-const promotionSound = new Audio("./assets/promotion.mp3");
-const checkSound = new Audio("./assets/check.mp3");
+const audio = {
+    move: new Audio("./assets/audio/move.mp3"),
+    capture: new Audio("./assets/audio/capture.mp3"),
+    castle: new Audio("./assets/audio/castle.mp3"),
+    promotion: new Audio("./assets/audio/promotion.mp3"),
+    check: new Audio("./assets/audio/check.mp3"),
+    mmmHeavy: new Audio("./assets/audio/heavy_male_mmm.mp3"),
+    mmmLow: new Audio("./assets/audio/male_mmmm_low.mp3"),
+    mmmHigh: new Audio("./assets/audio/male_mmmm_high.mp3"),
+    meow: new Audio("./assets/audio/cat_meow.mp3"),
+};
 
 const promotionOverlay = document.getElementById("promotion-overlay");
 const qPromotion = document.getElementById("promotion-q");
@@ -365,15 +371,15 @@ async function performChallengeMove(move) {
 
 function playSound(moveResult) {
     if (moveResult.checkState !== null) {
-        checkSound.play();
+        audio.check.play();
     } else if (moveResult.kingsideCastle || moveResult.queensideCastle) {
-        castleSound.play();
+        audio.castle.play();
     } else if (moveResult.promotion) {
-        promotionSound.play();
+        audio.promotion.play();
     } else if (moveResult.captured) {
-        captureSound.play();
+        audio.capture.play();
     } else {
-        moveSound.play();
+        audio.move.play();
     }
 }
 
@@ -443,6 +449,11 @@ window.addEventListener("mouseup", async (event) => {
 
     if (!result) return;
     updateSidePanel(result);
+    if (result.solved) {
+        const solvedAudio = [audio.meow, audio.mmmHeavy, audio.mmmHigh, audio.mmmLow];
+        const randomAudio = Math.floor(Math.random() * solvedAudio.length);
+        solvedAudio[randomAudio].play();
+    }
 });
 
 document.addEventListener("mousedown", event => {
