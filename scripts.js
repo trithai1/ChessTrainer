@@ -508,8 +508,9 @@ async function setupChallenge() {
     if (challenge.challenge !== undefined && challenge.solved !== true) return;
     
     let challengeSession = challenge.challenge ? null : JSON.parse(localStorage.getItem("challengeSession"));
-    challengeSession = await challenge.nextChallenge();
+    challengeSession = await challenge.nextChallenge(challengeSession);
     localStorage.setItem("challengeSession", JSON.stringify(challengeSession));
+
     removeChessPieces();
     removeHelpers();
     svg_utils.removeAllSVG();
