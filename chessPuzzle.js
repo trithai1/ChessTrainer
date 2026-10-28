@@ -62,7 +62,7 @@ export default class ChessPuzzle {
 
         if (minIndex === maxIndex) return null;
 
-        const index = 102; // minIndex + Math.floor(Math.random() * (maxIndex - minIndex));
+        const index = minIndex + Math.floor(Math.random() * (maxIndex - minIndex));
         return this.puzzles[index];
     }
 

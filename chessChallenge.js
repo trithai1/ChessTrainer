@@ -62,7 +62,7 @@ export default class ChessChallenge {
         const [newPool, value] = ChessChallenge.randomPoolNumber(this.pool, 6);
         this.pool = newPool;
 
-        const isPuzzle = false; // value % 2 === 0;
+        const isPuzzle = value % 2 === 0;
         if (isPuzzle) {
             this.challenge = {
                 type: ChessChallenge.PUZZLE,
@@ -78,8 +78,7 @@ export default class ChessChallenge {
                 type: ChessChallenge.POSITION,
                 position: this.chessPosition.getRandomPosition(this.positionRating),
                 rating: undefined,
-                // maxMoves: this.getRandomNumber5(),
-                maxMoves: 2,
+                maxMoves: this.getRandomNumber5(),
                 moveCount: 0,
                 currentScore: undefined,
                 bestMove: undefined,
