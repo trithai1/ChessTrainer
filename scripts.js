@@ -454,6 +454,15 @@ window.addEventListener("mouseup", async (event) => {
         const randomAudio = Math.floor(Math.random() * solvedAudio.length);
         solvedAudio[randomAudio].play();
     }
+
+    if (result.ratingChange) {
+        const rating = {puzzle: challenge.puzzleRating, position: challenge.positionRating};
+        localStorage.setItem("rating", JSON.stringify(rating));
+
+        const challengeSession = JSON.parse(localStorage.getItem("challengeSession"));
+        challengeSession.pass = challenge.pass;
+        localStorage.setItem("challengeSession", JSON.stringify(challengeSession));
+    }
 });
 
 document.addEventListener("mousedown", event => {
@@ -504,13 +513,46 @@ function removeChessPieces() {
     chessGrid.querySelectorAll(".piece").forEach(element => element.remove());
 }
 
-async function setupChallenge() {
+function initializeSidePanel(challengeSession) {
+    puzzleRatingValueEl.textContent = challenge.puzzleRating;
+    positionRatingValueEl.textContent = challenge.positionRating;
+
+    puzzleRatingEl.style.border = `1px solid ${COLORS.page.yellow}`;
+    puzzleRatingLabelEl.style.color = COLORS.page.yellow;
+    puzzleRatingValueEl.textContent = challenge.puzzleRating;
+
+    positionRatingEl.style.border = `1px solid ${COLORS.page.yellow}`;
+    positionRatingLabelEl.style.color = COLORS.page.yellow;
+    positionRatingValueEl.textContent = challenge.positionRating;
+
+    moveClassificationEl.style.border = `2px solid ${COLORS.page.yellow}`;
+    moveClassificationPEl.style.color = COLORS.page.white;
+    moveClassificationPEl.textContent = CLASSIFICATION.default;
+
+    nextChallengeEl.disabled = true;
+    nextChallengeEl.textContent = "Inprogress...";
+
+    if (!challengeSession || challengeSession.pass === null) return;
+    if (challengeSession.pass) {
+        nextChallengeEl.disabled = false;
+    }
+
+    const color = challengeSession.pass ? COLORS.correct : COLORS.incorrect;
+    if (challengeSession.type === ChessChallenge.PUZZLE) {
+        puzzleRatingEl.style.border = `1px solid ${color}`;
+        puzzleRatingLabelEl.style.color = color;
+    } else {
+        positionRatingEl.style.border = `1px solid ${color}`;
+        positionRatingLabelEl.style.color = color;
+    }
+}
+
+async function setupChallenge(challengeSession=null) {
     if (challenge.challenge !== undefined && challenge.solved !== true) return;
     
-    let challengeSession = challenge.challenge ? null : JSON.parse(localStorage.getItem("challengeSession"));
     challengeSession = await challenge.nextChallenge(challengeSession);
     localStorage.setItem("challengeSession", JSON.stringify(challengeSession));
-
+    
     removeChessPieces();
     removeHelpers();
     svg_utils.removeAllSVG();
@@ -529,21 +571,20 @@ async function setupChallenge() {
     fenToChessboard(chess.getFen());
     performPieceMove(chess, firstMove);
 
-    puzzleRatingEl.style.border = `1px solid ${COLORS.page.yellow}`;
-    puzzleRatingLabelEl.style.color = COLORS.page.yellow;
-    puzzleRatingValueEl.textContent = challenge.puzzleRating;
-
-    positionRatingEl.style.border = `1px solid ${COLORS.page.yellow}`;
-    positionRatingLabelEl.style.color = COLORS.page.yellow;
-    positionRatingValueEl.textContent = challenge.positionRating;
-
-    moveClassificationEl.style.border = `2px solid ${COLORS.page.yellow}`;
-    moveClassificationPEl.style.color = COLORS.page.white;
-    moveClassificationPEl.textContent = CLASSIFICATION.default;
-
-    nextChallengeEl.disabled = true;
-    nextChallengeEl.textContent = "Inprogress...";
+    initializeSidePanel(challengeSession);
 }
-setupChallenge();
 
-nextChallengeEl.addEventListener("mouseup", setupChallenge);
+nextChallengeEl.addEventListener("mouseup", () => setupChallenge());
+
+function main() {
+    const rating = JSON.parse(localStorage.getItem("rating"));
+    if (rating) {
+        challenge.puzzleRating = rating.puzzle;
+        challenge.positionRating = rating.position;
+    }
+
+    const challengeSession = JSON.parse(localStorage.getItem("challengeSession"));    
+    setupChallenge(challengeSession);
+}
+
+main()
