@@ -82,6 +82,40 @@ body {
     height: 100%;
 }
 
+.about-section.contacts {
+    display: flex;
+}
+
+#contactForm {
+    background-color: rgba(0, 0, 0, 0.2);
+    display: flex;
+    margin-left: 5vw;
+    padding: .5vw;
+    border-radius: 4px;
+    border: 1px solid black;
+}
+
+#contactForm input {
+    background-color: rgba(173, 216, 230, 0.60);
+    width: 9.8vw;
+    border-radius: 4px;
+}
+
+#contactForm textarea {
+    background-color: rgba(173, 216, 230, 0.60);
+    width: 20vw;
+    min-height: 15vh;
+    border-radius: 4px;
+}
+
+#contactForm button {
+    background-color: rgba(213, 206, 71, 0.5);
+    padding: 1vw;
+    margin-top: auto;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
 /* Header */
 
 .nav-header {
