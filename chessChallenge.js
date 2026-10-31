@@ -1,8 +1,8 @@
-import Chess from "../../Logicore/chess.js";
+import Chess from "./Logicore/chess.js";
 import ChessPuzzle from "./chessPuzzle.js";
 import ChessPosition from "./chessPosition.js";
 import ChessAnalysis from "./chessAnalysis.js";
-import { GAME_STATUS, PIECE_COLOR } from "../Logicore/chess_constants.js";
+import { GAME_STATUS, PIECE_COLOR } from "./Logicore/chess_constants.js";
 
 export default class ChessChallenge {
     // Type

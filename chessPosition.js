@@ -1,5 +1,3 @@
-import Chess from "../../Logicore/chess.js";
-
 export default class ChessPosition {
     constructor() {
         this.games = [];
