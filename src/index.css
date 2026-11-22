@@ -1,1 +1,490 @@
 @import "tailwindcss";
+
+:root {
+    --cell-highlight: rgb(101, 185, 230, .35);
+    --svg-index: 60;
+    --selection-overlay-index: 150;
+    --promotion-index: 200;
+    --white: #fff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+
+    background-image: url("assets/img/swirling_mountain_valley.png");
+    background-size: cover;
+    background-position: center;
+
+    font-family: sans-serif;
+}
+
+/* Footer */
+
+.footer {
+    background-color: rgba(128, 128, 128, 0.825);
+    margin: 10px;
+    padding: 3px 5px;
+    width: fit-content;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.825);
+    font-size: min(1.5vw, 1.5vh);
+}
+
+/* About */
+
+.container {
+    display: flex;
+    padding: 20px;
+    height: auto;
+    width: 100%;
+}
+
+.about-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    
+    flex: 1;
+    background-color: rgba(128, 128, 128, 0.825);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.825);
+}
+
+.about-section {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-left: 5px solid blue;
+    border-radius: 4px;
+    padding: 10px;
+    flex-grow: 0;
+    margin: 3px;
+}
+
+.about-section ul {
+    margin-left: 8px;
+}
+
+.cat-img {
+    align-self: center;
+    flex-grow: 1;
+    height: min(35vw, 35vh);
+    margin: 10px;
+}
+
+.cat-img img {
+    object-fit: cover;
+    height: 100%;
+}
+
+.about-section.contacts {
+    display: flex;
+}
+
+#contactForm {
+    background-color: rgba(0, 0, 0, 0.2);
+    display: flex;
+    margin-left: 5vw;
+    padding: .5vw;
+    border-radius: 4px;
+    border: 1px solid black;
+}
+
+#contactForm input {
+    background-color: rgba(173, 216, 230, 0.60);
+    width: 9.8vw;
+    border-radius: 4px;
+}
+
+#contactForm textarea {
+    background-color: rgba(173, 216, 230, 0.60);
+    width: 20vw;
+    min-height: 15vh;
+    border-radius: 4px;
+}
+
+#contactForm button {
+    background-color: rgba(213, 206, 71, 0.5);
+    padding: 1vw;
+    margin-top: auto;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+/* Header */
+
+.nav-header {
+    background-color: rgb(217, 159, 13);
+    display: flex;
+    align-items: center;
+    position: sticky;
+    box-sizing: border-box;
+    padding: 14px 28px;
+    margin: 0;
+    border: 2px solid rgb(0, 3, 65);
+    border-radius: 4px;
+}
+
+nav a {
+    color: var(--white);
+    padding: 10px;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: rgb(57, 22, 1);
+}
+
+/* Side panel */
+
+#side-panel {
+    background-color: rgba(44, 40, 40, 0.825);
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    width: min(20cqw, 20cqh);
+    margin: min(5cqw, 5cqh) 0 min(5cqw, 5cqh) 0;
+    border-radius: 4px;
+    font-size: max(1vw, 1vh);
+    border: 2px solid rgb(7, 53, 73);
+}
+
+.rating-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.rating-container p {
+    color: rgb(247, 211, 111);
+    align-self: center;
+    font-size: min(2.2cqw, 2.2cqh);
+    font-weight: bold;
+}
+
+.ratings {
+    display: flex;
+    justify-content: center;
+    padding: 5px;
+    gap: 5px;
+    border-radius: 4px;
+}
+
+.rating {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(60, 58, 58, 0.85);
+    border: 1px solid rgb(247, 211, 111);
+    border-radius: 4px;
+    width: 100%;
+}
+
+.ratings .label {
+    font-size: min(2cqw, 2cqh);
+    text-align: center;
+    color: rgb(247, 211, 111);
+}
+
+.ratings .value {
+    font-size: min(2cqw, 2cqh);
+    text-align: center;
+    color: white;
+}
+
+.move-classification {
+    background-color: rgba(60, 58, 58, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: min(3vw, 3vh);
+    margin: min(2vw, 2vh) 5px 0;
+    font-size: min(2.3cqw, 2.3cqh);
+    font-weight: bold;
+    border-radius: 4px;
+    border: 1px solid rgb(247, 211, 111);
+}
+
+.move-classification p {
+    color: white;
+    text-align: center;
+}
+
+.next-challenge {
+    background-color: rgba(60, 58, 58, 0.85);
+    margin-top: auto;
+    padding: min(3cqw, 3cqh) min(0.5cqw, 0.5cqh);
+    margin: auto 5px 5px 5px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: min(2.5cqw, 2.5cqh);
+    color: rgba(69, 190, 65);
+    border: 2px solid rgba(69, 190, 65);
+    transition:
+        background-color .3s ease,
+        color .3s ease,
+        border .3s ease;
+}
+
+.next-challenge:hover {
+    background-color: rgba(69, 190, 65);
+    color: white;
+    border: 2px solid white;
+}
+
+.next-challenge:active {
+    background-color: rgb(23, 23, 84, .5);
+    color: rgba(255, 255, 255, 0.5);
+    border: 2px solid rgba(255, 255, 255, .5);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    background-color: rgb(23, 23, 84, .5);
+    color: rgba(255, 255, 255, 0.5);
+    border: 2px solid rgba(255, 255, 255, .5);
+}
+
+/* Game Area */
+
+.game {
+    display: flex;
+    justify-content: center; /* centers horizontally */
+    align-items: center; /* centers vertically */
+
+    container-type: size;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+#chess-container {
+    container-type: size;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: min(100cqw, 100cqh);
+    aspect-ratio: 1;
+}
+
+#chess-border {
+    background-image: url("assets/img/chess/default/outer_board.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+#promotion-overlay {
+    display: none;
+    grid-template-columns: repeat(8, min(10cqw, 10cqh));
+    grid-template-rows: repeat(8, min(10cqw, 10cqh));
+    background-color: rgba(0, 0, 0, 0.8);
+    grid-column: 1/-1;
+    grid-row: 1/-1;
+    width: 100%;
+    height: auto;
+    z-index: var(--selection-overlay-index);
+}
+
+#promotion-q {
+    background-image: url("assets/img/white_piece_frame.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    grid-column: 3;
+    grid-row: 1;
+    width: 100%;
+    height: auto;
+    z-index: var(--promotion-index);
+}
+
+#promotion-n {
+    background-image: url("assets/img/white_piece_frame.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    grid-column: 3;
+    grid-row: 2;
+    width: 100%;
+    height: auto;
+    z-index: var(--promotion-index);
+}
+
+#promotion-r {
+    background-image: url("assets/img/white_piece_frame.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    grid-column: 3;
+    grid-row: 3;
+    width: 100%;
+    height: auto;
+    z-index: var(--promotion-index);
+}
+
+#promotion-b {
+    background-image: url("assets/img/white_piece_frame.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    grid-column: 3;
+    grid-row: 4;
+    width: 100%;
+    height: auto;
+    z-index: var(--promotion-index);
+}
+
+.promotion-piece {
+    width: 100%;
+    height: 100%;
+    z-index: var(--promotion-index);
+}
+
+#svg-container {
+    z-index: var(--svg-index);
+    width: 100%;
+    height: auto;
+    grid-column: 1/-1;
+    grid-row: 1/-1;
+    pointer-events: none;
+}
+
+#chess-grid {
+    display: grid;
+    background-color: black;
+    background-image: url("assets/img/chess/default/inner_board.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    grid-template-columns: repeat(8, min(10cqw, 10cqh));
+    grid-template-rows: repeat(8, min(10cqw, 10cqh));
+    margin: min(10cqw, 10cqh);
+    width: fit-content;
+    border-radius: 1%;
+    line-height: 0; /* svg is treated as inline text, so this remove the extra spacing and tighten the div size to the svg */
+}
+
+.move-highlight {
+    background-color: var(--cell-highlight);
+}
+
+.piece:not(.dragging):hover {
+    background-color: var(--cell-highlight);
+}
+
+.piece-move {
+    width: min(10cqw, 10cqh);
+    height: min(10cqw, 10cqh);
+}
+
+.move-circle {
+    position: relative;
+    width: calc(min(10cqw, 10cqh)/3);
+    height: calc(min(10cqw, 10cqh)/3);
+    background-color: rgb(0, 0, 0, .35);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.capture-mark {
+    width: 100%;
+    height: 100%;
+    opacity: 0.35;
+}
+
+.piece-highlight {
+    background-color: var(--cell-highlight);
+}
+
+.wp {
+    background-image: url("assets/img/chess/default/wp.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wn {
+    background-image: url("assets/img/chess/default/wn.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wb {
+    background-image: url("assets/img/chess/default/wb.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wr {
+    background-image: url("assets/img/chess/default/wr.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wq {
+    background-image: url("assets/img/chess/default/wq.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wk {
+    background-image: url("assets/img/chess/default/wk.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.bp {
+    background-image: url("assets/img/chess/default/bp.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.bn {
+    background-image: url("assets/img/chess/default/bn.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.bb {
+    background-image: url("assets/img/chess/default/bb.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.br {
+    background-image: url("assets/img/chess/default/br.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.bq {
+    background-image: url("assets/img/chess/default/bq.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.bk {
+    background-image: url("assets/img/chess/default/bk.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
