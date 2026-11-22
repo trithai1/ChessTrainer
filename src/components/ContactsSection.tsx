@@ -8,15 +8,15 @@ export function ContactsSection() {
         <p><span>Call me at: </span> +1234567890</p>
       </div>
       
-      <form id="contactForm">
-        <div>
-          <div>
-            <input type="text" name="name" placeholder="Name" required />
-            <input type="email" name="email" placeholder="Email" required />
+      <form className="gap-1" id="contactForm">
+        <div className="flex flex-col gap-1">
+          <div className="flex gap-1">
+            <input className="border-1" type="text" name="name" placeholder="Name" required />
+            <input className="border-1" type="email" name="email" placeholder="Email" required />
           </div>
-          <textarea name="message" placeholder="Message" required />
+          <textarea className="border-1" name="message" placeholder="Message" required />
         </div>
-        <button type="submit">Send</button>
+        <button className="border-1" type="submit">Send</button>
       </form>
     </section>
   );
