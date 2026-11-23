@@ -5,7 +5,7 @@ import { ContactsSection } from "../components/ContactsSection";
 
 export function About() {
   return (
-    <div className="container">
+    <div className="flex p-[20px]">
       <div className="about-page">
         <AboutSection />
         
