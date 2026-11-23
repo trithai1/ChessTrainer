@@ -10,7 +10,7 @@ export function About() {
         <AboutSection />
         
         <div className="cat-img">
-          <img src="/src/assets/img/yelling_women_versus_chess_cat.png" alt="cat-photo" />
+          <img src="assets/img/yelling_women_versus_chess_cat.png" alt="cat-photo" />
         </div>
 
         <CreditSection />

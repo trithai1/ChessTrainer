@@ -17,7 +17,7 @@ body {
     flex-direction: column;
     height: 100dvh;
 
-    background-image: url("assets/img/swirling_mountain_valley.png");
+    background-image: url("/assets/img/swirling_mountain_valley.png");
     background-size: cover;
     background-position: center;
 
@@ -266,7 +266,7 @@ button:disabled {
 }
 
 #chess-border {
-    background-image: url("assets/img/chess/default/outer_board.png");
+    background-image: url("/assets/img/chess/default/outer_board.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -285,7 +285,7 @@ button:disabled {
 }
 
 #promotion-q {
-    background-image: url("assets/img/white_piece_frame.png");
+    background-image: url("/assets/img/white_piece_frame.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -297,7 +297,7 @@ button:disabled {
 }
 
 #promotion-n {
-    background-image: url("assets/img/white_piece_frame.png");
+    background-image: url("/assets/img/white_piece_frame.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -309,7 +309,7 @@ button:disabled {
 }
 
 #promotion-r {
-    background-image: url("assets/img/white_piece_frame.png");
+    background-image: url("/assets/img/white_piece_frame.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -321,7 +321,7 @@ button:disabled {
 }
 
 #promotion-b {
-    background-image: url("assets/img/white_piece_frame.png");
+    background-image: url("/assets/img/white_piece_frame.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -350,7 +350,7 @@ button:disabled {
 #chess-grid {
     display: grid;
     background-color: black;
-    background-image: url("assets/img/chess/default/inner_board.png");
+    background-image: url("/assets/img/chess/default/inner_board.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -397,84 +397,84 @@ button:disabled {
 }
 
 .wp {
-    background-image: url("assets/img/chess/default/wp.png");
+    background-image: url("/assets/img/chess/default/wp.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .wn {
-    background-image: url("assets/img/chess/default/wn.png");
+    background-image: url("/assets/img/chess/default/wn.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .wb {
-    background-image: url("assets/img/chess/default/wb.png");
+    background-image: url("/assets/img/chess/default/wb.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .wr {
-    background-image: url("assets/img/chess/default/wr.png");
+    background-image: url("/assets/img/chess/default/wr.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .wq {
-    background-image: url("assets/img/chess/default/wq.png");
+    background-image: url("/assets/img/chess/default/wq.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .wk {
-    background-image: url("assets/img/chess/default/wk.png");
+    background-image: url("/assets/img/chess/default/wk.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .bp {
-    background-image: url("assets/img/chess/default/bp.png");
+    background-image: url("/assets/img/chess/default/bp.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .bn {
-    background-image: url("assets/img/chess/default/bn.png");
+    background-image: url("/assets/img/chess/default/bn.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .bb {
-    background-image: url("assets/img/chess/default/bb.png");
+    background-image: url("/assets/img/chess/default/bb.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .br {
-    background-image: url("assets/img/chess/default/br.png");
+    background-image: url("/assets/img/chess/default/br.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .bq {
-    background-image: url("assets/img/chess/default/bq.png");
+    background-image: url("/assets/img/chess/default/bq.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
 .bk {
-    background-image: url("assets/img/chess/default/bk.png");
+    background-image: url("/assets/img/chess/default/bk.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
